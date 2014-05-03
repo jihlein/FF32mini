@@ -399,11 +399,6 @@ void slaveSpektrumFrameLost(void)
 
 void USART3_IRQHandler(void)
 {
-    if (((USART3->CR1 & USART_CR1_TXEIE) != 0) && ((USART3->ISR & USART_ISR_TXE) != 0))
-    {
-        USART3->CR1 &= ~USART_CR1_TXEIE;
-    }
-
     if (((USART3->CR1 & USART_CR1_RXNEIE) != 0) && ((USART3->ISR & USART_ISR_RXNE) != 0))
     {
         uint8_t b = USART_ReceiveData(USART3);
@@ -418,11 +413,6 @@ void USART3_IRQHandler(void)
 
 void USART1_IRQHandler(void)
 {
-    if (((USART1->CR1 & USART_CR1_TXEIE) != 0) && ((USART1->ISR & USART_ISR_TXE) != 0))
-	{
-        USART1->CR1 &= ~USART_CR1_TXEIE;
-    }
-
     if (((USART1->CR1 & USART_CR1_RXNEIE) != 0) && ((USART1->ISR & USART_ISR_RXNE) != 0))
     {
         uint8_t b = USART_ReceiveData(USART1);

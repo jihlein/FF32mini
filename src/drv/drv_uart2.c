@@ -109,10 +109,22 @@ void DMA1_Channel7_IRQHandler(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// GPS Initialization
+// UART2 Initialization
 ///////////////////////////////////////////////////////////////////////////////
 
-void gpsInit(void)
+enum { expandEvr = 0 };
+
+void uart2ListenerCB(evr_t e)
+{
+    if (expandEvr)
+        uart2PrintF("EVR-%s %8.3fs %s (%04X)\n", evrToSeverityStr(e.evr), (float)e.time/1000., evrToStr(e.evr), e.reason);
+    else
+        uart2PrintF("EVR:%08X %04X %04X\n", e.time, e.evr, e.reason);
+}
+
+///////////////////////////////////////
+
+void uart2Init(void)
 {
     GPIO_InitTypeDef  GPIO_InitStructure;
     USART_InitTypeDef USART_InitStructure;
@@ -204,31 +216,33 @@ void gpsInit(void)
     USART_DMACmd(USART2, USART_DMAReq_Tx, ENABLE);
 
     USART_Cmd(USART2, ENABLE);
+
+    evrRegisterListener(uart2ListenerCB);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// GPS Available
+// UART2 Available
 ///////////////////////////////////////////////////////////////////////////////
 
-uint16_t gpsAvailable(void)
+uint32_t uart2Available(void)
 {
     return (DMA_GetCurrDataCounter(DMA1_Channel6) != rx2DMAPos) ? true : false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// GPS Clear Buffer
+// UART2 Clear Buffer
 ///////////////////////////////////////////////////////////////////////////////
 
-void gpsClearBuffer(void)
+void uart2ClearBuffer(void)
 {
     rx2DMAPos = DMA_GetCurrDataCounter(DMA1_Channel6);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// GPS Number of Characters Available
+// UART2 Number of Characters Available
 ///////////////////////////////////////////////////////////////////////////////
 
-uint16_t gpsNumCharsAvailable(void)
+uint16_t uart2NumCharsAvailable(void)
 {
 	int32_t number;
 
@@ -241,10 +255,10 @@ uint16_t gpsNumCharsAvailable(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// GPS Read
+// UART2 Read
 ///////////////////////////////////////////////////////////////////////////////
 
-uint8_t gpsRead(void)
+uint8_t uart2Read(void)
 {
     uint8_t ch;
 
@@ -257,20 +271,20 @@ uint8_t gpsRead(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// GPS Read Poll
+// UART2 Read Poll
 ///////////////////////////////////////////////////////////////////////////////
 
-uint8_t gpsReadPoll(void)
+uint8_t uart2ReadPoll(void)
 {
-    while (!gpsAvailable()); // wait for some bytes
-    return gpsRead();
+    while (!uart2Available()); // wait for some bytes
+    return uart2Read();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// GPS Write
+// UART2 Write
 ///////////////////////////////////////////////////////////////////////////////
 
-void gpsWrite(uint8_t ch)
+void uart2Write(uint8_t ch)
 {
     tx2Buffer[tx2BufferHead] = ch;
     tx2BufferHead = (tx2BufferHead + 1) % UART2_BUFFER_SIZE;
@@ -279,10 +293,10 @@ void gpsWrite(uint8_t ch)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// GPS Print
+// UART2 Print
 ///////////////////////////////////////////////////////////////////////////////
 
-void gpsPrint(char *str)
+void uart2Print(char *str)
 {
     while (*str)
     {
@@ -294,10 +308,27 @@ void gpsPrint(char *str)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// GPS Print Binary String
+// UART2 Print Formatted - Print formatted string to UART2
+// From Ala42
 ///////////////////////////////////////////////////////////////////////////////
 
-void gpsPrintBinary(uint8_t *buf, uint16_t length)
+void uart2PrintF(const char * fmt, ...)
+{
+	char buf[256];
+
+	va_list  vlist;
+	va_start (vlist, fmt);
+
+	vsnprintf(buf, sizeof(buf), fmt, vlist);
+	uart2Print(buf);
+	va_end(vlist);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// UART2 Print Binary String
+///////////////////////////////////////////////////////////////////////////////
+
+void uart2PrintBinary(uint8_t *buf, uint16_t length)
 {
     uint16_t i;
 

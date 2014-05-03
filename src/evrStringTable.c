@@ -24,6 +24,8 @@ constStrArr_t evrWarn = {
     "Battery Low",
     "Battery Very Low",
     "Config has CRC Bad History flag set! Use CLI to clear",
+    "Sensor Config has CRC Bad History flag set! Use CLI to clear",
+    "System Config has CRC Bad History flag set! Use CLI to clear",
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -36,7 +38,9 @@ constStrArr_t evrError = {
     "Battery Dangerously Low!",
     "Flash CRC failed! Bad History Set",
     "Flash erase failed",
-    "Flash programming failed"
+    "Flash programming failed",
+    "Sensor CRC Failed! Bad History Set",
+    "System CRC Failed! Bad History Set",
 };
 
 ///////////////////////////////////////////////////////////////////////////////

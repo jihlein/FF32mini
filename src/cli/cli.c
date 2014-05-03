@@ -39,6 +39,16 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+uint32_t (*cliPortAvailable)(void);
+
+uint8_t  (*cliPortRead)(void);
+
+void     (*cliPortPrint)(char *str);
+
+void     (*cliPortPrintF)(const char * fmt, ...);
+
+///////////////////////////////////////
+
 uint8_t cliBusy = false;
 
 static volatile uint8_t cliQuery        = 'x';
@@ -57,14 +67,14 @@ char *readStringCLI(char *data, uint8_t length)
 
     do
     {
-        if (cliAvailable() == false)
+        if (cliPortAvailable() == false)
         {
             delay(10);
             timeout++;
         }
         else
         {
-            data[index] = cliRead();
+            data[index] = cliPortRead();
             timeout = 0;
             index++;
         }
@@ -88,14 +98,14 @@ float readFloatCLI(void)
 
     do
     {
-        if (cliAvailable() == false)
+        if (cliPortAvailable() == false)
         {
             delay(10);
             timeout++;
         }
         else
         {
-            data[index] = cliRead();
+            data[index] = cliPortRead();
             timeout = 0;
             index++;
         }
@@ -115,11 +125,11 @@ void readCliPID(unsigned char PIDid)
 {
   struct PIDdata* pid = &eepromConfig.PID[PIDid];
 
-  pid->B             = readFloatCLI();
-  pid->P             = readFloatCLI();
-  pid->I             = readFloatCLI();
-  pid->D             = readFloatCLI();
-  pid->windupGuard   = readFloatCLI();
+  pid->B              = readFloatCLI();
+  pid->P              = readFloatCLI();
+  pid->I              = readFloatCLI();
+  pid->D              = readFloatCLI();
+  pid->windupGuard    = readFloatCLI();
   pid->iTerm          = 0.0f;
   pid->lastDcalcValue = 0.0f;
   pid->lastDterm      = 0.0f;
@@ -134,747 +144,798 @@ void readCliPID(unsigned char PIDid)
 void cliCom(void)
 {
 	uint8_t  index;
+	char mvlkToggleString[5] = { 0, 0, 0, 0, 0 };
 
-    if ((cliAvailable() && !validCliCommand))
-    	cliQuery = cliRead();
-
-    switch (cliQuery)
+    if ((cliPortAvailable() && !validCliCommand))
     {
-        ///////////////////////////////
-
-        case 'a': // Rate PIDs
-            cliPrintF("\nRoll Rate PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n", eepromConfig.PID[ROLL_RATE_PID].B,
-                            		                                               eepromConfig.PID[ROLL_RATE_PID].P,
-                		                                                           eepromConfig.PID[ROLL_RATE_PID].I,
-                		                                                           eepromConfig.PID[ROLL_RATE_PID].D,
-                		                                                           eepromConfig.PID[ROLL_RATE_PID].windupGuard,
-                		                                                           eepromConfig.PID[ROLL_RATE_PID].dErrorCalc ? "Error" : "State");
-
-            cliPrintF("Pitch Rate PID: %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[PITCH_RATE_PID].B,
-                            		                                               eepromConfig.PID[PITCH_RATE_PID].P,
-                		                                                           eepromConfig.PID[PITCH_RATE_PID].I,
-                		                                                           eepromConfig.PID[PITCH_RATE_PID].D,
-                		                                                           eepromConfig.PID[PITCH_RATE_PID].windupGuard,
-                		                                                           eepromConfig.PID[PITCH_RATE_PID].dErrorCalc ? "Error" : "State");
-
-            cliPrintF("Yaw Rate PID:   %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[YAW_RATE_PID].B,
-                             		                                               eepromConfig.PID[YAW_RATE_PID].P,
-                		                                                           eepromConfig.PID[YAW_RATE_PID].I,
-                		                                                           eepromConfig.PID[YAW_RATE_PID].D,
-                		                                                           eepromConfig.PID[YAW_RATE_PID].windupGuard,
-                		                                                           eepromConfig.PID[YAW_RATE_PID].dErrorCalc ? "Error" : "State");
-            cliQuery = 'x';
-            validCliCommand = false;
-            break;
-
-        ///////////////////////////////
-
-        case 'b': // Attitude PIDs
-            cliPrintF("\nRoll Attitude PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n", eepromConfig.PID[ROLL_ATT_PID].B,
-              		                                                                   eepromConfig.PID[ROLL_ATT_PID].P,
-               		                                                                   eepromConfig.PID[ROLL_ATT_PID].I,
-               		                                                                   eepromConfig.PID[ROLL_ATT_PID].D,
-               		                                                                   eepromConfig.PID[ROLL_ATT_PID].windupGuard,
-               		                                                                   eepromConfig.PID[ROLL_ATT_PID].dErrorCalc ? "Error" : "State");
-
-            cliPrintF("Pitch Attitude PID: %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[PITCH_ATT_PID].B,
-               		                                                                   eepromConfig.PID[PITCH_ATT_PID].P,
-               		                                                                   eepromConfig.PID[PITCH_ATT_PID].I,
-               		                                                                   eepromConfig.PID[PITCH_ATT_PID].D,
-               		                                                                   eepromConfig.PID[PITCH_ATT_PID].windupGuard,
-               		                                                                   eepromConfig.PID[PITCH_ATT_PID].dErrorCalc ? "Error" : "State");
-
-            cliPrintF("Heading PID:        %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[HEADING_PID].B,
-               		                                                                   eepromConfig.PID[HEADING_PID].P,
-               		                                                                   eepromConfig.PID[HEADING_PID].I,
-               		                                                                   eepromConfig.PID[HEADING_PID].D,
-               		                                                                   eepromConfig.PID[HEADING_PID].windupGuard,
-               		                                                                   eepromConfig.PID[HEADING_PID].dErrorCalc ? "Error" : "State");
-            cliQuery = 'x';
-            validCliCommand = false;
-            break;
-
-        ///////////////////////////////
-
-        case 'c': // Velocity PIDs
-            cliPrintF("\nnDot PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n", eepromConfig.PID[NDOT_PID].B,
-               		                                                          eepromConfig.PID[NDOT_PID].P,
-               		                                                          eepromConfig.PID[NDOT_PID].I,
-               		                                                          eepromConfig.PID[NDOT_PID].D,
-               		                                                          eepromConfig.PID[NDOT_PID].windupGuard,
-               		                                                          eepromConfig.PID[NDOT_PID].dErrorCalc ? "Error" : "State");
-
-            cliPrintF("eDot PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[EDOT_PID].B,
-               		                                                          eepromConfig.PID[EDOT_PID].P,
-               		                                                          eepromConfig.PID[EDOT_PID].I,
-               		                                                          eepromConfig.PID[EDOT_PID].D,
-               		                                                          eepromConfig.PID[EDOT_PID].windupGuard,
-               		                                                          eepromConfig.PID[EDOT_PID].dErrorCalc ? "Error" : "State");
-
-            cliPrintF("hDot PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[HDOT_PID].B,
-               		                                                          eepromConfig.PID[HDOT_PID].P,
-               		                                                          eepromConfig.PID[HDOT_PID].I,
-               		                                                          eepromConfig.PID[HDOT_PID].D,
-               		                                                          eepromConfig.PID[HDOT_PID].windupGuard,
-               		                                                          eepromConfig.PID[HDOT_PID].dErrorCalc ? "Error" : "State");
-            cliQuery = 'x';
-            validCliCommand = false;
-            break;
-
-        ///////////////////////////////
-
-        case 'd': // Position PIDs
-            cliPrintF("\nN PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n", eepromConfig.PID[N_PID].B,
-               		                                                       eepromConfig.PID[N_PID].P,
-               		                                                       eepromConfig.PID[N_PID].I,
-               		                                                       eepromConfig.PID[N_PID].D,
-               		                                                       eepromConfig.PID[N_PID].windupGuard,
-               		                                                       eepromConfig.PID[N_PID].dErrorCalc ? "Error" : "State");
-
-            cliPrintF("E PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[E_PID].B,
-               		                                                       eepromConfig.PID[E_PID].P,
-               		                                                       eepromConfig.PID[E_PID].I,
-               		                                                       eepromConfig.PID[E_PID].D,
-               		                                                       eepromConfig.PID[E_PID].windupGuard,
-               		                                                       eepromConfig.PID[E_PID].dErrorCalc ? "Error" : "State");
-
-            cliPrintF("h PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[H_PID].B,
-               		                                                       eepromConfig.PID[H_PID].P,
-               		                                                       eepromConfig.PID[H_PID].I,
-               		                                                       eepromConfig.PID[H_PID].D,
-               		                                                       eepromConfig.PID[H_PID].windupGuard,
-               		                                                       eepromConfig.PID[H_PID].dErrorCalc ? "Error" : "State");
-            cliQuery = 'x';
-            validCliCommand = false;
-          	break;
-
-         ///////////////////////////////
-
-        case 'e': // Loop Delta Times
-           	cliPrintF("%7ld, %7ld, %7ld, %7ld, %7ld, %7ld, %7ld\n", deltaTime1000Hz,
-               		                                                deltaTime500Hz,
-               		                                                deltaTime100Hz,
-               		                                                deltaTime50Hz,
-               		                                                deltaTime10Hz,
-               		                                                deltaTime5Hz,
-               		                                                deltaTime1Hz);
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'f': // Loop Execution Times
-           	cliPrintF("%7ld, %7ld, %7ld, %7ld, %7ld, %7ld, %7ld\n", executionTime1000Hz,
-           	        			                                    executionTime500Hz,
-           	        			                                    executionTime100Hz,
-           	        			                                    executionTime50Hz,
-           	        			                                    executionTime10Hz,
-           	        			                                    executionTime5Hz,
-           	        			                                    executionTime1Hz);
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'g': // 500 Hz Accels
-        	cliPrintF("%9.4f, %9.4f, %9.4f\n", sensors.accel500Hz[XAXIS],
-        			                           sensors.accel500Hz[YAXIS],
-        			                           sensors.accel500Hz[ZAXIS]);
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'h': // 100 hz Earth Axis Accels
-        	cliPrintF("%9.4f, %9.4f, %9.4f\n", earthAxisAccels[XAXIS],
-        			                           earthAxisAccels[YAXIS],
-        			                           earthAxisAccels[ZAXIS]);
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'i': // 500 hz Gyros
-        	cliPrintF("%9.4f, %9.4f, %9.4f, %9.4f\n", sensors.gyro500Hz[ROLL ] * R2D,
-        			                                  sensors.gyro500Hz[PITCH] * R2D,
-        					                          sensors.gyro500Hz[YAW  ] * R2D,
-        					                          mpu6000Temperature);
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'j': // 10 Hz Mag Data
-        	cliPrintF("%9.4f, %9.4f, %9.4f\n", sensors.mag10Hz[XAXIS],
-        			                           sensors.mag10Hz[YAXIS],
-        			                           sensors.mag10Hz[ZAXIS]);
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'k': // Vertical Axis Variables
-        	cliPrintF("%9.4f, %9.4f, %9.4f, %9.4f, %4ld, %9.4f\n", earthAxisAccels[ZAXIS],
-        			                                               sensors.pressureAlt50Hz,
-        					                                       hDotEstimate,
-        					                                       hEstimate,
-        					                                       ms5611Temperature,
-        					                                       aglRead());
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'l': // Attitudes
-        	cliPrintF("%9.4f, %9.4f, %9.4f\n", sensors.attitude500Hz[ROLL ] * R2D,
-        			                           sensors.attitude500Hz[PITCH] * R2D,
-        			                           sensors.attitude500Hz[YAW  ] * R2D);
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'm': // Axis PIDs
-        	cliPrintF("%9.4f, %9.4f, %9.4f\n", axisPID[ROLL ],
-           			                           axisPID[PITCH],
-           			                           axisPID[YAW  ]);
-           	validCliCommand = false;
-           	break;
-
-        ///////////////////////////////
-
-        case 'n': // GPS Data
-           	switch (gpsDataType)
-           	{
-           	    ///////////////////////
-
-           	    case 0:
-           	        cliPrintF("%12ld, %12ld, %12ld, %12ld, %12ld, %12ld, %4d, %4d\n", gps.latitude,
-           			                                                                  gps.longitude,
-           			                                                                  gps.hMSL,
-           			                                                                  gps.velN,
-           			                                                                  gps.velE,
-           			                                                                  gps.velD,
-           			                                                                  gps.fix,
-           			                                                                  gps.numSats);
-           	        break;
-
-           	    ///////////////////////
-
-           	    case 1:
-           	    	cliPrintF("%3d: ", gps.numCh);
-
-           	    	for (index = 0; index < gps.numCh; index++)
-           	    	    cliPrintF("%3d  ", gps.chn[index]);
-
-           	    	cliPrint("\n");
-
-           	    	break;
-
-           	    ///////////////////////
-
-           	    case 2:
-           	    	cliPrintF("%3d: ", gps.numCh);
-
-           	    	for (index = 0; index < gps.numCh; index++)
-           	    		cliPrintF("%3d  ", gps.svid[index]);
-
-           	    	cliPrint("\n");
-
-           	    	break;
-
-           	    ///////////////////////
-
-           	    case 3:
-           	    	cliPrintF("%3d: ", gps.numCh);
-
-           	    	for (index = 0; index < gps.numCh; index++)
-           	    		cliPrintF("%3d  ", gps.cno[index]);
-
-           	    	cliPrint("\n");
-
-           	    	break;
-
-           	    ///////////////////////
-           	}
-
-           	validCliCommand = false;
-            break;
-
-       ///////////////////////////////
-
-        case 'o':
-            cliPrintF("%9.4f\n", batteryVoltage);
-
-            validCliCommand = false;
-            break;
-
-        ///////////////////////////////
-
-        case 'p': // Primary Spektrum Raw Data
-        	cliPrintF("%04X, %04X, %04X, %04X, %04X, %04X, %04X, %04X, %04X, %04X\n", primarySpektrumState.lostFrameCnt,
-        			                                                                  primarySpektrumState.rcAvailable,
-        			                                                                  primarySpektrumState.values[0],
-        			                                                                  primarySpektrumState.values[1],
-        			                                                                  primarySpektrumState.values[2],
-        			                                                                  primarySpektrumState.values[3],
-        			                                                                  primarySpektrumState.values[4],
-        			                                                                  primarySpektrumState.values[5],
-        			                                                                  primarySpektrumState.values[6],
-        			                                                                  primarySpektrumState.values[7]);
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'q': // Not Used
-            cliQuery = 'x';
-           	validCliCommand = false;
-           	break;
-
-        ///////////////////////////////
-
-        case 'r':
-        	if (flightMode == RATE)
-        		cliPrint("Flight Mode = RATE      ");
-        	else if (flightMode == ATTITUDE)
-        		cliPrint("Flight Mode = ATTITUDE  ");
-        	else if (flightMode == GPS)
-        		cliPrint("Flight Mode = GPS       ");
-
-        	if (headingHoldEngaged == true)
-        	    cliPrint("Heading Hold = ENGAGED     ");
-        	else
-        	    cliPrint("Heading Hold = DISENGAGED  ");
-
-        	cliPrint("Alt Hold = ");
-
-            switch (verticalModeState)
-        	{
-        		case ALT_DISENGAGED_THROTTLE_ACTIVE:
-		            cliPrint("Alt Disenaged Throttle Active\n");
-
-        		    break;
-
-        		case ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT:
-		            cliPrint("Alt Hold Fixed at Engagement Alt\n");
-
-        		    break;
-
-        		case ALT_HOLD_AT_REFERENCE_ALTITUDE:
-		            cliPrint("Alt Hold at Reference Alt\n");
-
-        		    break;
-
-        		case VERTICAL_VELOCITY_HOLD_AT_REFERENCE_VELOCITY:
-		            cliPrint("V Velocity Hold at Reference Vel\n");
-
-        		    break;
-
-        		case ALT_DISENGAGED_THROTTLE_INACTIVE:
-        		    cliPrint("Alt Disengaged Throttle Inactive\n");
-
-        		    break;
-            }
-
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 's': // Raw Receiver Commands
-            if ((eepromConfig.receiverType == SPEKTRUM) && (maxChannelNum > 0))
-            {
-				for (index = 0; index < maxChannelNum - 1; index++)
-                     cliPrintF("%4ld, ", spektrumBuf[index]);
-
-                cliPrintF("%4ld\n", spektrumBuf[maxChannelNum - 1]);
-            }
-            else if ((eepromConfig.receiverType == SPEKTRUM) && (maxChannelNum == 0))
-                cliPrint("Invalid Number of Spektrum Channels....\n");
-		    else
-		    {
-				for (index = 0; index < 7; index++)
-                    cliPrintF("%4i, ", ppmRxRead(index));
-
-                cliPrintF("%4i\n", ppmRxRead(7));
-            }
-
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 't': // Processed Receiver Commands
-            for (index = 0; index < 7; index++)
-                cliPrintF("%8.2f, ", rxCommand[index]);
-
-            cliPrintF("%8.2f\n", rxCommand[7]);
-
-            validCliCommand = false;
-            break;
-
-        ///////////////////////////////
-
-        case 'u': // Command in Detent Discretes
-        	cliPrintF("%s, ", commandInDetent[ROLL ] ? " true" : "false");
-        	cliPrintF("%s, ", commandInDetent[PITCH] ? " true" : "false");
-        	cliPrintF("%s\n", commandInDetent[YAW  ] ? " true" : "false");
-
-            validCliCommand = false;
-            break;
-
-        ///////////////////////////////
-
-        case 'v': // ESC PWM Outputs
-        	cliPrintF("%4ld, ", TIM2->CCR1 );
-        	cliPrintF("%4ld, ", TIM2->CCR2 );
-            cliPrintF("%4ld, ", TIM15->CCR1);
-        	cliPrintF("%4ld, ", TIM15->CCR2);
-        	cliPrintF("%4ld, ", TIM3->CCR1 );
-        	cliPrintF("%4ld\n", TIM3->CCR2 );
-
-        	validCliCommand = false;
-            break;
-
-        ///////////////////////////////
-
-        case 'w': // Servo PWM Outputs
-        	cliPrintF("%4ld, ", TIM4->CCR1);
-        	cliPrintF("%4ld, ", TIM4->CCR2);
-        	cliPrintF("%4ld, ", TIM4->CCR3);
-        	cliPrintF("%4ld\n", TIM4->CCR4);
-
-            validCliCommand = false;
-            break;
-
-        ///////////////////////////////
-
-        case 'x':
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'y': // ESC Calibration
-        	escCalibration();
-
-        	cliQuery = 'x';
-        	break;
-
-        ///////////////////////////////
-
-        case 'z':
-            cliPrintF("%5.2f, %5.2f\n", voltageMonitor(),
-            		                    adcChannel());
-            break;
-
-        ///////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////
-
-        case 'A': // Read Roll Rate PID Values
-            readCliPID(ROLL_RATE_PID);
-            cliPrint( "\nRoll Rate PID Received....\n" );
-
-        	cliQuery = 'a';
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'B': // Read Pitch Rate PID Values
-            readCliPID(PITCH_RATE_PID);
-            cliPrint( "\nPitch Rate PID Received....\n" );
-
-        	cliQuery = 'a';
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'C': // Read Yaw Rate PID Values
-            readCliPID(YAW_RATE_PID);
-            cliPrint( "\nYaw Rate PID Received....\n" );
-
-        	cliQuery = 'a';
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'D': // Read Roll Attitude PID Values
-            readCliPID(ROLL_ATT_PID);
-            cliPrint( "\nRoll Attitude PID Received....\n" );
-
-        	cliQuery = 'b';
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'E': // Read Pitch Attitude PID Values
-            readCliPID(PITCH_ATT_PID);
-            cliPrint( "\nPitch Attitude PID Received....\n" );
-
-        	cliQuery = 'b';
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'F': // Read Heading Hold PID Values
-            readCliPID(HEADING_PID);
-            cliPrint( "\nHeading PID Received....\n" );
-
-        	cliQuery = 'b';
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'G': // Read nDot PID Values
-            readCliPID(NDOT_PID);
-            cliPrint( "\nnDot PID Received....\n" );
-
-        	cliQuery = 'c';
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'H': // Read eDot PID Values
-            readCliPID(EDOT_PID);
-            cliPrint( "\neDot PID Received....\n" );
-
-            cliQuery = 'c';
-          	validCliCommand = false;
-          	break;
-
-        ///////////////////////////////
-
-        case 'I': // Read hDot PID Values
-            readCliPID(HDOT_PID);
-            cliPrint( "\nhDot PID Received....\n" );
-
-          	cliQuery = 'c';
-          	validCliCommand = false;
-          	break;
-
-       	///////////////////////////////
-
-        case 'J': // Read n PID Values
-            readCliPID(N_PID);
-            cliPrint( "\nn PID Received....\n" );
-
-            cliQuery = 'd';
-            validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'K': // Read e PID Values
-            readCliPID(E_PID);
-            cliPrint( "\ne PID Received....\n" );
-
-            cliQuery = 'd';
-            validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'L': // Read h PID Values
-            readCliPID(H_PID);
-            cliPrint( "\nh PID Received....\n" );
-
-            cliQuery = 'd';
-        	validCliCommand = false;
-        	break;
-
-        ///////////////////////////////
-
-        case 'N': // Mixer CLI
-            mixerCLI();
-
-            cliQuery = 'x';
-            validCliCommand = false;
-            break;
-
-        ///////////////////////////////
-
-        case 'O': // Receiver CLI
-            receiverCLI();
-
-            cliQuery = 'x';
-            validCliCommand = false;
-            break;
-
-        ///////////////////////////////
-
-        case 'P': // Sensor CLI
-           	sensorCLI();
-
-           	cliQuery = 'x';
-           	validCliCommand = false;
-           	break;
-
-        ///////////////////////////////
-
-        case 'Q': // GPS Data Selection
-        	gpsDataType = (uint8_t)readFloatCLI();
-
-        	cliPrint("\n");
-
-            cliQuery = 'n';
-            validCliCommand = false;
-            break;
-
-        ///////////////////////////////
-
-        case 'R': // Reset to Bootloader
-        	cliPrint("Entering Bootloader....\n\n");
-        	delay(100);
-        	systemReset(true);
-        	break;
-
-        ///////////////////////////////
-
-        case 'S': // Reset System
-        	cliPrint("\nSystem Reseting....\n\n");
-        	delay(100);
-        	systemReset(false);
-        	break;
-
-        ///////////////////////////////
-
-        case 'T': // Telemetry CLI
-            telemetryCLI();
-
-            cliQuery = 'x';
-         	validCliCommand = false;
-         	break;
-
-        ///////////////////////////////
-
-        case 'U': // EEPROM CLI
-            eepromCLI();
-
-            cliQuery = 'x';
-         	validCliCommand = false;
-         	break;
-
-        ///////////////////////////////
-
-        case 'V': // Reset EEPROM Parameters
-            cliPrint( "\nEEPROM Parameters Reset....\n" );
-            checkFirstTime(true);
-            cliPrint("\nSystem Resetting....\n\n");
-            delay(100);
-            systemReset(false);
-            break;
-
-        ///////////////////////////////
-
-        case 'W': // Write EEPROM Parameters
-            cliPrint("\nWriting EEPROM Parameters....\n\n");
-            writeEEPROM();
-
-            cliQuery = 'x';
-         	validCliCommand = false;
-         	break;
-
-        ///////////////////////////////
-
-        case 'X': // Not Used
-            cliQuery = 'x';
-            validCliCommand = false;
-            break;
-
-        ///////////////////////////////
-
-        case 'Y': // Not Used
-            computeGeoMagElements();
-
-            cliQuery = 'x';
-            break;
-
-        ///////////////////////////////
-
-        case 'Z': // Not Used
-            cliQuery = 'x';
-            break;
-
-        ///////////////////////////////
-
-        case '?': // Command Summary
-        	cliBusy = true;
-
-        	cliPrint("\n");
-   		    cliPrint("'a' Rate PIDs                              'A' Set Roll Rate PID Data   AB;P;I;D;windupGuard;dErrorCalc\n");
-   		    cliPrint("'b' Attitude PIDs                          'B' Set Pitch Rate PID Data  BB;P;I;D;windupGuard;dErrorCalc\n");
-   		    cliPrint("'c' Velocity PIDs                          'C' Set Yaw Rate PID Data    CB;P;I;D;windupGuard;dErrorCalc\n");
-   		    cliPrint("'d' Position PIDs                          'D' Set Roll Att PID Data    DB;P;I;D;windupGuard;dErrorCalc\n");
-   		    cliPrint("'e' Loop Delta Times                       'E' Set Pitch Att PID Data   EB;P;I;D;windupGuard;dErrorCalc\n");
-   		    cliPrint("'f' Loop Execution Times                   'F' Set Hdg Hold PID Data    FB;P;I;D;windupGuard;dErrorCalc\n");
-   		    cliPrint("'g' 500 Hz Accels                          'G' Set nDot PID Data        GB;P;I;D;windupGuard;dErrorCalc\n");
-   		    cliPrint("'h' 100 Hz Earth Axis Accels               'H' Set eDot PID Data        HB;P;I;D;windupGuard;dErrorCalc\n");
-   		    cliPrint("'i' 500 Hz Gyros                           'I' Set hDot PID Data        IB;P;I;D;windupGuard;dErrorCalc\n");
-   		    cliPrint("'j' 10 hz Mag Data                         'J' Set n PID Data           JB;P;I;D;windupGuard;dErrorCalc\n");
-   		    cliPrint("'k' Vertical Axis Variable                 'K' Set e PID Data           KB;P;I;D;windupGuard;dErrorCalc\n");
-   		    cliPrint("'l' Attitudes                              'L' Set h PID Data           LB;P;I;D;windupGuard;dErrorCalc\n");
-   		    cliPrint("\n");
-
-   		    cliPrint("Press space bar for more, or enter a command....\n");
-   		    while (cliAvailable() == false);
-   		    cliQuery = cliRead();
-   		    if (cliQuery != ' ')
-   		    {
-   		        validCliCommand = true;
-   		        cliBusy = false;
-   		    	return;
-   		    }
-
-   		    cliPrint("\n");
-   		    cliPrint("'m' Axis PIDs                              'M' Not Used\n");
-   		    cliPrint("'n' GPS Data                               'N' Mixer CLI\n");
-   		    cliPrint("'o' Battery Voltage                        'O' Receiver CLI\n");
-   		    cliPrint("'p' Primary Spektrum Raw Data              'P' Sensor CLI\n");
-   		    cliPrint("'q' Not Used                               'Q' GPS Data Selection\n");
-   		    cliPrint("'r' Mode States                            'R' Reset and Enter Bootloader\n");
-   		    cliPrint("'s' Raw Receiver Commands                  'S' Reset\n");
-   		    cliPrint("'t' Processed Receiver Commands            'T' Telemetry CLI\n");
-   		    cliPrint("'u' Command In Detent Discretes            'U' EEPROM CLI\n");
-   		    cliPrint("'v' Motor PWM Outputs                      'V' Reset EEPROM Parameters\n");
-   		    cliPrint("'w' Servo PWM Outputs                      'W' Write EEPROM Parameters\n");
-   		    cliPrint("'x' Terminate Serial Communication         'X' Not Used\n");
-   		    cliPrint("\n");
-
-   		    cliPrint("Press space bar for more, or enter a command....\n");
-   		    while (cliAvailable() == false);
-   		    cliQuery = cliRead();
-   		    if (cliQuery != ' ')
-   		    {
-   		    	validCliCommand = true;
-   		    	cliBusy = false;
-   		    	return;
-   		    }
-
-   		    cliPrint("\n");
-   		    cliPrint("'y' ESC Calibration                        'Y' Not Used\n");
-   		    cliPrint("'z' ADC Values                             'Z' Not Used\n");
-   		    cliPrint("                                           '?' Command Summary\n");
-   		    cliPrint("\n");
-
-  		    cliQuery = 'x';
-  		    cliBusy = false;
-   		    break;
+		cliQuery = cliPortRead();
+
+        if (cliQuery == '#')                       // Check to see if we should toggle mavlink msg state
+        {
+	    	while (cliPortAvailable == false);
+
+        	readStringCLI(mvlkToggleString, 5);
+
+            if ((mvlkToggleString[0] == '#') &&
+            	(mvlkToggleString[1] == '#') &&
+                (mvlkToggleString[2] == '#') &&
+                (mvlkToggleString[3] == '#'))
+	    	{
+	    	    if (eepromConfig.mavlinkEnabled == false)
+	    	    {
+	    	 	    eepromConfig.mavlinkEnabled  = true;
+	    		    eepromConfig.activeTelemetry = 0x0000;
+	    		}
+	    		else
+	    		{
+	    		    eepromConfig.mavlinkEnabled = false;
+	    	    }
+
+	    	    if (mvlkToggleString[4] == 'W')
+	    	    {
+	                cliPortPrint("\nWriting EEPROM Parameters....\n");
+	                writeEEPROM();
+	    	    }
+	    	}
+	    }
+	}
+
+	validCliCommand = false;
+
+    if ((eepromConfig.mavlinkEnabled == false) && (cliQuery != '#'))
+    {
+        switch (cliQuery)
+        {
+            ///////////////////////////////
+
+            case 'a': // Rate PIDs
+                cliPortPrintF("\nRoll Rate PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n", eepromConfig.PID[ROLL_RATE_PID].B,
+                                		                                                   eepromConfig.PID[ROLL_RATE_PID].P,
+                    		                                                               eepromConfig.PID[ROLL_RATE_PID].I,
+                    		                                                               eepromConfig.PID[ROLL_RATE_PID].D,
+                    		                                                               eepromConfig.PID[ROLL_RATE_PID].windupGuard,
+                    		                                                               eepromConfig.PID[ROLL_RATE_PID].dErrorCalc ? "Error" : "State");
+
+                cliPortPrintF("Pitch Rate PID: %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[PITCH_RATE_PID].B,
+                                		                                                   eepromConfig.PID[PITCH_RATE_PID].P,
+                    		                                                               eepromConfig.PID[PITCH_RATE_PID].I,
+                    		                                                               eepromConfig.PID[PITCH_RATE_PID].D,
+                    		                                                               eepromConfig.PID[PITCH_RATE_PID].windupGuard,
+                    		                                                               eepromConfig.PID[PITCH_RATE_PID].dErrorCalc ? "Error" : "State");
+
+                cliPortPrintF("Yaw Rate PID:   %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[YAW_RATE_PID].B,
+                                 		                                                   eepromConfig.PID[YAW_RATE_PID].P,
+                    		                                                               eepromConfig.PID[YAW_RATE_PID].I,
+                    		                                                               eepromConfig.PID[YAW_RATE_PID].D,
+                    		                                                               eepromConfig.PID[YAW_RATE_PID].windupGuard,
+                    		                                                               eepromConfig.PID[YAW_RATE_PID].dErrorCalc ? "Error" : "State");
+                cliQuery = 'x';
+                validCliCommand = false;
+                break;
 
             ///////////////////////////////
+
+            case 'b': // Attitude PIDs
+                cliPortPrintF("\nRoll Attitude PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n", eepromConfig.PID[ROLL_ATT_PID].B,
+                  		                                                                       eepromConfig.PID[ROLL_ATT_PID].P,
+                   		                                                                       eepromConfig.PID[ROLL_ATT_PID].I,
+                   		                                                                       eepromConfig.PID[ROLL_ATT_PID].D,
+                   		                                                                       eepromConfig.PID[ROLL_ATT_PID].windupGuard,
+                   		                                                                       eepromConfig.PID[ROLL_ATT_PID].dErrorCalc ? "Error" : "State");
+
+                cliPortPrintF("Pitch Attitude PID: %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[PITCH_ATT_PID].B,
+                   		                                                                       eepromConfig.PID[PITCH_ATT_PID].P,
+                   		                                                                       eepromConfig.PID[PITCH_ATT_PID].I,
+                   		                                                                       eepromConfig.PID[PITCH_ATT_PID].D,
+                   		                                                                       eepromConfig.PID[PITCH_ATT_PID].windupGuard,
+                   		                                                                       eepromConfig.PID[PITCH_ATT_PID].dErrorCalc ? "Error" : "State");
+
+                cliPortPrintF("Heading PID:        %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[HEADING_PID].B,
+                   		                                                                       eepromConfig.PID[HEADING_PID].P,
+                   		                                                                       eepromConfig.PID[HEADING_PID].I,
+                   		                                                                       eepromConfig.PID[HEADING_PID].D,
+                   		                                                                       eepromConfig.PID[HEADING_PID].windupGuard,
+                   		                                                                       eepromConfig.PID[HEADING_PID].dErrorCalc ? "Error" : "State");
+                cliQuery = 'x';
+                validCliCommand = false;
+                break;
+
+            ///////////////////////////////
+
+            case 'c': // Velocity PIDs
+                cliPortPrintF("\nnDot PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n", eepromConfig.PID[NDOT_PID].B,
+                   		                                                              eepromConfig.PID[NDOT_PID].P,
+                   		                                                              eepromConfig.PID[NDOT_PID].I,
+                   		                                                              eepromConfig.PID[NDOT_PID].D,
+                   		                                                              eepromConfig.PID[NDOT_PID].windupGuard,
+                   		                                                              eepromConfig.PID[NDOT_PID].dErrorCalc ? "Error" : "State");
+
+                cliPortPrintF("eDot PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[EDOT_PID].B,
+                   		                                                              eepromConfig.PID[EDOT_PID].P,
+                   		                                                              eepromConfig.PID[EDOT_PID].I,
+                   		                                                              eepromConfig.PID[EDOT_PID].D,
+                   		                                                              eepromConfig.PID[EDOT_PID].windupGuard,
+                   		                                                              eepromConfig.PID[EDOT_PID].dErrorCalc ? "Error" : "State");
+
+                cliPortPrintF("hDot PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[HDOT_PID].B,
+                   		                                                              eepromConfig.PID[HDOT_PID].P,
+                   		                                                              eepromConfig.PID[HDOT_PID].I,
+                   		                                                              eepromConfig.PID[HDOT_PID].D,
+                   		                                                              eepromConfig.PID[HDOT_PID].windupGuard,
+                   		                                                              eepromConfig.PID[HDOT_PID].dErrorCalc ? "Error" : "State");
+                cliQuery = 'x';
+                validCliCommand = false;
+                break;
+
+            ///////////////////////////////
+
+            case 'd': // Position PIDs
+                cliPortPrintF("\nN PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n", eepromConfig.PID[N_PID].B,
+                   		                                                           eepromConfig.PID[N_PID].P,
+                   		                                                           eepromConfig.PID[N_PID].I,
+                   		                                                           eepromConfig.PID[N_PID].D,
+                   		                                                           eepromConfig.PID[N_PID].windupGuard,
+                   		                                                           eepromConfig.PID[N_PID].dErrorCalc ? "Error" : "State");
+
+                cliPortPrintF("E PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[E_PID].B,
+                   		                                                           eepromConfig.PID[E_PID].P,
+                   		                                                           eepromConfig.PID[E_PID].I,
+                   		                                                           eepromConfig.PID[E_PID].D,
+                   		                                                           eepromConfig.PID[E_PID].windupGuard,
+                   		                                                           eepromConfig.PID[E_PID].dErrorCalc ? "Error" : "State");
+
+                cliPortPrintF("h PID:  %8.4f, %8.4f, %8.4f, %8.4f, %8.4f, %s\n",   eepromConfig.PID[H_PID].B,
+                   		                                                           eepromConfig.PID[H_PID].P,
+                   		                                                           eepromConfig.PID[H_PID].I,
+                   		                                                           eepromConfig.PID[H_PID].D,
+                   		                                                           eepromConfig.PID[H_PID].windupGuard,
+                   		                                                           eepromConfig.PID[H_PID].dErrorCalc ? "Error" : "State");
+                cliQuery = 'x';
+                validCliCommand = false;
+              	break;
+
+            ///////////////////////////////
+
+            case 'e': // Loop Delta Times
+               	cliPortPrintF("%7ld, %7ld, %7ld, %7ld, %7ld, %7ld, %7ld\n", deltaTime1000Hz,
+                   		                                                    deltaTime500Hz,
+                   		                                                    deltaTime100Hz,
+                   		                                                    deltaTime50Hz,
+                   		                                                    deltaTime10Hz,
+                   		                                                    deltaTime5Hz,
+                   		                                                    deltaTime1Hz);
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'f': // Loop Execution Times
+               	cliPortPrintF("%7ld, %7ld, %7ld, %7ld, %7ld, %7ld, %7ld\n", executionTime1000Hz,
+               	        			                                        executionTime500Hz,
+               	        			                                        executionTime100Hz,
+               	        			                                        executionTime50Hz,
+               	        			                                        executionTime10Hz,
+               	        			                                        executionTime5Hz,
+               	        			                                        executionTime1Hz);
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'g': // 500 Hz Accels
+            	cliPortPrintF("%9.4f, %9.4f, %9.4f\n", sensors.accel500Hz[XAXIS],
+            			                               sensors.accel500Hz[YAXIS],
+            			                               sensors.accel500Hz[ZAXIS]);
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'h': // 100 hz Earth Axis Accels
+            	cliPortPrintF("%9.4f, %9.4f, %9.4f\n", earthAxisAccels[XAXIS],
+            			                               earthAxisAccels[YAXIS],
+            			                               earthAxisAccels[ZAXIS]);
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'i': // 500 hz Gyros
+            	cliPortPrintF("%9.4f, %9.4f, %9.4f, %9.4f\n", sensors.gyro500Hz[ROLL ] * R2D,
+            			                                      sensors.gyro500Hz[PITCH] * R2D,
+            					                              sensors.gyro500Hz[YAW  ] * R2D,
+            					                              mpu6000Temperature);
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'j': // 10 Hz Mag Data
+            	cliPortPrintF("%9.4f, %9.4f, %9.4f\n", sensors.mag10Hz[XAXIS],
+            			                               sensors.mag10Hz[YAXIS],
+            			                               sensors.mag10Hz[ZAXIS]);
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'k': // Vertical Axis Variables
+            	cliPortPrintF("%9.4f, %9.4f, %9.4f, %9.4f, %4ld, %9.4f\n", earthAxisAccels[ZAXIS],
+            			                                                   sensors.pressureAlt50Hz,
+            					                                           hDotEstimate,
+            					                                           hEstimate,
+            					                                           ms5611Temperature,
+            					                                           aglRead());
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'l': // Attitudes
+            	cliPortPrintF("%9.4f, %9.4f, %9.4f\n", sensors.attitude500Hz[ROLL ] * R2D,
+            			                               sensors.attitude500Hz[PITCH] * R2D,
+            			                               sensors.attitude500Hz[YAW  ] * R2D);
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'm': // Axis PIDs
+            	cliPortPrintF("%9.4f, %9.4f, %9.4f\n", axisPID[ROLL ],
+               			                               axisPID[PITCH],
+               			                               axisPID[YAW  ]);
+               	validCliCommand = false;
+               	break;
+
+            ///////////////////////////////
+
+            case 'n': // GPS Data
+               	switch (gpsDataType)
+               	{
+               	    ///////////////////////
+
+               	    case 0:
+               	        cliPortPrintF("%12ld, %12ld, %12ld, %12ld, %12ld, %12ld, %4d, %4d\n", gps.latitude,
+               			                                                                      gps.longitude,
+               			                                                                      gps.hMSL,
+               			                                                                      gps.velN,
+               			                                                                      gps.velE,
+               			                                                                      gps.velD,
+               			                                                                      gps.fix,
+               			                                                                      gps.numSats);
+               	        break;
+
+               	    ///////////////////////
+
+               	    case 1:
+               	    	cliPortPrintF("%3d: ", gps.numCh);
+
+               	    	for (index = 0; index < gps.numCh; index++)
+               	    	    cliPortPrintF("%3d  ", gps.chn[index]);
+
+               	    	cliPortPrint("\n");
+
+               	    	break;
+
+               	    ///////////////////////
+
+               	    case 2:
+               	    	cliPortPrintF("%3d: ", gps.numCh);
+
+               	    	for (index = 0; index < gps.numCh; index++)
+               	    		cliPortPrintF("%3d  ", gps.svid[index]);
+
+               	    	cliPortPrint("\n");
+
+               	    	break;
+
+               	    ///////////////////////
+
+               	    case 3:
+               	    	cliPortPrintF("%3d: ", gps.numCh);
+
+               	    	for (index = 0; index < gps.numCh; index++)
+               	    		cliPortPrintF("%3d  ", gps.cno[index]);
+
+               	    	cliPortPrint("\n");
+
+               	    	break;
+
+               	    ///////////////////////
+               	}
+
+               	validCliCommand = false;
+                break;
+
+            ///////////////////////////////
+
+            case 'o':
+                cliPortPrintF("%9.4f\n", batteryVoltage);
+
+                validCliCommand = false;
+                break;
+
+            ///////////////////////////////
+
+            case 'p': // Primary Spektrum Raw Data
+            	cliPortPrintF("%04X, %04X, %04X, %04X, %04X, %04X, %04X, %04X, %04X, %04X\n", primarySpektrumState.lostFrameCnt,
+            			                                                                      primarySpektrumState.rcAvailable,
+            			                                                                      primarySpektrumState.values[0],
+            			                                                                      primarySpektrumState.values[1],
+            			                                                                      primarySpektrumState.values[2],
+            			                                                                      primarySpektrumState.values[3],
+            			                                                                      primarySpektrumState.values[4],
+            			                                                                      primarySpektrumState.values[5],
+            			                                                                      primarySpektrumState.values[6],
+            			                                                                      primarySpektrumState.values[7]);
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'q': // Not Used
+                cliQuery = 'x';
+               	validCliCommand = false;
+               	break;
+
+            ///////////////////////////////
+
+            case 'r':
+            	if (flightMode == RATE)
+            		cliPortPrint("Flight Mode = RATE      ");
+            	else if (flightMode == ATTITUDE)
+            		cliPortPrint("Flight Mode = ATTITUDE  ");
+            	else if (flightMode == GPS)
+            		cliPortPrint("Flight Mode = GPS       ");
+
+            	if (headingHoldEngaged == true)
+            	    cliPortPrint("Heading Hold = ENGAGED     ");
+            	else
+            	    cliPortPrint("Heading Hold = DISENGAGED  ");
+
+            	cliPortPrint("Alt Hold = ");
+
+                switch (verticalModeState)
+            	{
+            		case ALT_DISENGAGED_THROTTLE_ACTIVE:
+		                cliPortPrint("Alt Disenaged Throttle Active\n");
+
+            		    break;
+
+            		case ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT:
+		                cliPortPrint("Alt Hold Fixed at Engagement Alt\n");
+
+            		    break;
+
+            		case ALT_HOLD_AT_REFERENCE_ALTITUDE:
+		                cliPortPrint("Alt Hold at Reference Alt\n");
+
+            		    break;
+
+            		case VERTICAL_VELOCITY_HOLD_AT_REFERENCE_VELOCITY:
+		                cliPortPrint("V Velocity Hold at Reference Vel\n");
+
+            		    break;
+
+            		case ALT_DISENGAGED_THROTTLE_INACTIVE:
+            		    cliPortPrint("Alt Disengaged Throttle Inactive\n");
+
+            		    break;
+                }
+
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 's': // Raw Receiver Commands
+                if ((eepromConfig.receiverType == SPEKTRUM) && (maxChannelNum > 0))
+                {
+		    		for (index = 0; index < maxChannelNum - 1; index++)
+                         cliPortPrintF("%4ld, ", spektrumBuf[index]);
+
+                    cliPortPrintF("%4ld\n", spektrumBuf[maxChannelNum - 1]);
+                }
+                else if ((eepromConfig.receiverType == SPEKTRUM) && (maxChannelNum == 0))
+                    cliPortPrint("Invalid Number of Spektrum Channels....\n");
+		        else
+		        {
+		    		for (index = 0; index < 7; index++)
+                        cliPortPrintF("%4i, ", ppmRxRead(index));
+
+                    cliPortPrintF("%4i\n", ppmRxRead(7));
+                }
+
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 't': // Processed Receiver Commands
+                for (index = 0; index < 7; index++)
+                    cliPortPrintF("%8.2f, ", rxCommand[index]);
+
+                cliPortPrintF("%8.2f\n", rxCommand[7]);
+
+                validCliCommand = false;
+                break;
+
+            ///////////////////////////////
+
+            case 'u': // Command in Detent Discretes
+            	cliPortPrintF("%s, ", commandInDetent[ROLL ] ? " true" : "false");
+            	cliPortPrintF("%s, ", commandInDetent[PITCH] ? " true" : "false");
+            	cliPortPrintF("%s\n", commandInDetent[YAW  ] ? " true" : "false");
+
+                validCliCommand = false;
+                break;
+
+            ///////////////////////////////
+
+            case 'v': // ESC PWM Outputs
+            	cliPortPrintF("%4ld, ", TIM2->CCR1 );
+            	cliPortPrintF("%4ld, ", TIM2->CCR2 );
+                cliPortPrintF("%4ld, ", TIM15->CCR1);
+            	cliPortPrintF("%4ld, ", TIM15->CCR2);
+            	cliPortPrintF("%4ld, ", TIM3->CCR1 );
+            	cliPortPrintF("%4ld\n", TIM3->CCR2 );
+
+            	validCliCommand = false;
+                break;
+
+            ///////////////////////////////
+
+            case 'w': // Servo PWM Outputs
+            	cliPortPrintF("%4ld, ", TIM4->CCR1);
+            	cliPortPrintF("%4ld, ", TIM4->CCR2);
+            	cliPortPrintF("%4ld, ", TIM4->CCR3);
+            	cliPortPrintF("%4ld\n", TIM4->CCR4);
+
+                validCliCommand = false;
+                break;
+
+            ///////////////////////////////
+
+            case 'x':
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'y': // ESC Calibration
+            	escCalibration();
+
+            	cliQuery = 'x';
+            	break;
+
+            ///////////////////////////////
+
+            case 'z':
+                cliPortPrintF("%5.2f, %5.2f\n", voltageMonitor(),
+                		                        adcChannel());
+                break;
+
+            ///////////////////////////////
+
+            ///////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////
+
+            ///////////////////////////////
+
+            case 'A': // Read Roll Rate PID Values
+                readCliPID(ROLL_RATE_PID);
+                cliPortPrint( "\nRoll Rate PID Received....\n" );
+
+            	cliQuery = 'a';
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'B': // Read Pitch Rate PID Values
+                readCliPID(PITCH_RATE_PID);
+                cliPortPrint( "\nPitch Rate PID Received....\n" );
+
+            	cliQuery = 'a';
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'C': // Read Yaw Rate PID Values
+                readCliPID(YAW_RATE_PID);
+                cliPortPrint( "\nYaw Rate PID Received....\n" );
+
+            	cliQuery = 'a';
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'D': // Read Roll Attitude PID Values
+                readCliPID(ROLL_ATT_PID);
+                cliPortPrint( "\nRoll Attitude PID Received....\n" );
+
+            	cliQuery = 'b';
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'E': // Read Pitch Attitude PID Values
+                readCliPID(PITCH_ATT_PID);
+                cliPortPrint( "\nPitch Attitude PID Received....\n" );
+
+            	cliQuery = 'b';
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'F': // Read Heading Hold PID Values
+                readCliPID(HEADING_PID);
+                cliPortPrint( "\nHeading PID Received....\n" );
+
+            	cliQuery = 'b';
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'G': // Read nDot PID Values
+                readCliPID(NDOT_PID);
+                cliPortPrint( "\nnDot PID Received....\n" );
+
+            	cliQuery = 'c';
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'H': // Read eDot PID Values
+                readCliPID(EDOT_PID);
+                cliPortPrint( "\neDot PID Received....\n" );
+
+                cliQuery = 'c';
+              	validCliCommand = false;
+              	break;
+
+            ///////////////////////////////
+
+            case 'I': // Read hDot PID Values
+                readCliPID(HDOT_PID);
+                cliPortPrint( "\nhDot PID Received....\n" );
+
+              	cliQuery = 'c';
+              	validCliCommand = false;
+              	break;
+
+       	    ///////////////////////////////
+
+            case 'J': // Read n PID Values
+                readCliPID(N_PID);
+                cliPortPrint( "\nn PID Received....\n" );
+
+                cliQuery = 'd';
+                validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'K': // Read e PID Values
+                readCliPID(E_PID);
+                cliPortPrint( "\ne PID Received....\n" );
+
+                cliQuery = 'd';
+                validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'L': // Read h PID Values
+                readCliPID(H_PID);
+                cliPortPrint( "\nh PID Received....\n" );
+
+                cliQuery = 'd';
+            	validCliCommand = false;
+            	break;
+
+            ///////////////////////////////
+
+            case 'N': // Mixer CLI
+                mixerCLI();
+
+                cliQuery = 'x';
+                validCliCommand = false;
+                break;
+
+            ///////////////////////////////
+
+            case 'O': // Receiver CLI
+                receiverCLI();
+
+                cliQuery = 'x';
+                validCliCommand = false;
+                break;
+
+            ///////////////////////////////
+
+            case 'P': // Sensor CLI
+               	sensorCLI();
+
+               	cliQuery = 'x';
+               	validCliCommand = false;
+               	break;
+
+            ///////////////////////////////
+
+            case 'Q': // GPS Data Selection
+            	gpsDataType = (uint8_t)readFloatCLI();
+
+            	cliPortPrint("\n");
+
+                cliQuery = 'n';
+                validCliCommand = false;
+                break;
+
+            ///////////////////////////////
+
+            case 'R': // Reset to Bootloader
+            	cliPortPrint("Entering Bootloader....\n\n");
+            	delay(100);
+            	systemReset(true);
+            	break;
+
+            ///////////////////////////////
+
+            case 'S': // Reset System
+            	cliPortPrint("\nSystem Reseting....\n\n");
+            	delay(100);
+            	systemReset(false);
+            	break;
+
+            ///////////////////////////////
+
+            case 'T': // Telemetry CLI
+                telemetryCLI();
+
+                cliQuery = 'x';
+             	validCliCommand = false;
+             	break;
+
+            ///////////////////////////////
+
+            case 'U': // EEPROM CLI
+                eepromCLI();
+
+                cliQuery = 'x';
+             	validCliCommand = false;
+             	break;
+
+            ///////////////////////////////
+
+            case 'V': // Reset EEPROM Parameters
+                cliPortPrint( "\nEEPROM Parameters Reset....\n" );
+                checkFirstTime(true);
+                cliPortPrint("\nSystem Resetting....\n\n");
+                delay(100);
+                systemReset(false);
+                break;
+
+            ///////////////////////////////
+
+            case 'W': // Write EEPROM Parameters
+                cliPortPrint("\nWriting EEPROM Parameters....\n\n");
+                writeEEPROM();
+
+                cliQuery = 'x';
+             	validCliCommand = false;
+             	break;
+
+            ///////////////////////////////
+
+            case 'X': // Not Used
+                cliQuery = 'x';
+                validCliCommand = false;
+                break;
+
+            ///////////////////////////////
+
+            case 'Y': // Not Used
+                computeGeoMagElements();
+
+                cliQuery = 'x';
+                break;
+
+            ///////////////////////////////
+
+            case 'Z': // Not Used
+                cliPortPrintF("Size of sensor EEPROM:  %5ld\n",   numberOfSensorBytes);
+                cliPortPrintF("Number of sensor Pages: %5ld\n",   numberOfSensorPages);
+                cliPortPrintF("Size of system EEPROM:  %5ld\n",   numberOfSystemBytes);
+                cliPortPrintF("Number of system Pages: %5ld\n\n", numberOfSystemPages);
+
+                cliPortPrintF("Sensor EEPROM Version:  %5ld\n",   sensorEEPROM.data.sensorVersion);
+                cliPortPrintF("System EEPROM Version:  %5ld\n\n", systemEEPROM.data.systemVersion);
+
+                cliQuery = 'x';
+                break;
+
+            ///////////////////////////////
+
+            case '?': // Command Summary
+            	cliBusy = true;
+
+            	cliPortPrint("\n");
+   		        cliPortPrint("'a' Rate PIDs                              'A' Set Roll Rate PID Data   AB;P;I;D;windupGuard;dErrorCalc\n");
+   		        cliPortPrint("'b' Attitude PIDs                          'B' Set Pitch Rate PID Data  BB;P;I;D;windupGuard;dErrorCalc\n");
+   		        cliPortPrint("'c' Velocity PIDs                          'C' Set Yaw Rate PID Data    CB;P;I;D;windupGuard;dErrorCalc\n");
+   		        cliPortPrint("'d' Position PIDs                          'D' Set Roll Att PID Data    DB;P;I;D;windupGuard;dErrorCalc\n");
+   		        cliPortPrint("'e' Loop Delta Times                       'E' Set Pitch Att PID Data   EB;P;I;D;windupGuard;dErrorCalc\n");
+   		        cliPortPrint("'f' Loop Execution Times                   'F' Set Hdg Hold PID Data    FB;P;I;D;windupGuard;dErrorCalc\n");
+   		        cliPortPrint("'g' 500 Hz Accels                          'G' Set nDot PID Data        GB;P;I;D;windupGuard;dErrorCalc\n");
+   		        cliPortPrint("'h' 100 Hz Earth Axis Accels               'H' Set eDot PID Data        HB;P;I;D;windupGuard;dErrorCalc\n");
+   		        cliPortPrint("'i' 500 Hz Gyros                           'I' Set hDot PID Data        IB;P;I;D;windupGuard;dErrorCalc\n");
+   		        cliPortPrint("'j' 10 hz Mag Data                         'J' Set n PID Data           JB;P;I;D;windupGuard;dErrorCalc\n");
+   		        cliPortPrint("'k' Vertical Axis Variable                 'K' Set e PID Data           KB;P;I;D;windupGuard;dErrorCalc\n");
+   		        cliPortPrint("'l' Attitudes                              'L' Set h PID Data           LB;P;I;D;windupGuard;dErrorCalc\n");
+   		        cliPortPrint("\n");
+
+   		        cliPortPrint("Press space bar for more, or enter a command....\n");
+
+   		        while (cliPortAvailable() == false);
+
+   		        cliQuery = cliPortRead();
+
+   		        if (cliQuery != ' ')
+   		        {
+   		            validCliCommand = true;
+   		            cliBusy = false;
+   		        	return;
+   		        }
+
+   		        cliPortPrint("\n");
+   		        cliPortPrint("'m' Axis PIDs                              'M' Not Used\n");
+   		        cliPortPrint("'n' GPS Data                               'N' Mixer CLI\n");
+   		        cliPortPrint("'o' Battery Voltage                        'O' Receiver CLI\n");
+   		        cliPortPrint("'p' Primary Spektrum Raw Data              'P' Sensor CLI\n");
+   		        cliPortPrint("'q' Not Used                               'Q' GPS Data Selection\n");
+   		        cliPortPrint("'r' Mode States                            'R' Reset and Enter Bootloader\n");
+   		        cliPortPrint("'s' Raw Receiver Commands                  'S' Reset\n");
+   		        cliPortPrint("'t' Processed Receiver Commands            'T' Telemetry CLI\n");
+   		        cliPortPrint("'u' Command In Detent Discretes            'U' EEPROM CLI\n");
+   		        cliPortPrint("'v' Motor PWM Outputs                      'V' Reset EEPROM Parameters\n");
+   		        cliPortPrint("'w' Servo PWM Outputs                      'W' Write EEPROM Parameters\n");
+   		        cliPortPrint("'x' Terminate Serial Communication         'X' Not Used\n");
+   		        cliPortPrint("\n");
+
+   		        cliPortPrint("Press space bar for more, or enter a command....\n");
+
+   		        while (cliPortAvailable() == false);
+
+   		        cliQuery = cliPortRead();
+
+   		        if (cliQuery != ' ')
+   		        {
+   		        	validCliCommand = true;
+   		        	cliBusy = false;
+   		        	return;
+   		        }
+
+   		        cliPortPrint("\n");
+   		        cliPortPrint("'y' ESC Calibration                        'Y' Not Used\n");
+   		        cliPortPrint("'z' ADC Values                             'Z' Not Used\n");
+   		        cliPortPrint("                                           '?' Command Summary\n");
+   		        cliPortPrint("\n");
+
+  		        cliQuery = 'x';
+  		        cliBusy = false;
+   		        break;
+
+                ///////////////////////////////
+		}
     }
 }
 

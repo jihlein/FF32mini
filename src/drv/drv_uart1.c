@@ -50,7 +50,8 @@
 
 #define UART1_TX_PIN        GPIO_Pin_9
 #define UART1_RX_PIN        GPIO_Pin_10
-#define UART1_GPIO          GPIOA
+#define UART1_TX_GPIO       GPIOA
+#define UART1_RX_GPIO       GPIOA
 #define UART1_TX_PINSOURCE  GPIO_PinSource9
 #define UART1_RX_PINSOURCE  GPIO_PinSource10
 
@@ -108,38 +109,47 @@ void DMA1_Channel4_IRQHandler(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Telemetry Initialization
+// UART1 Initialization
 ///////////////////////////////////////////////////////////////////////////////
 
 enum { expandEvr = 0 };
 
-void telemetryListenerCB(evr_t e)
+void uart1ListenerCB(evr_t e)
 {
     if (expandEvr)
-        telemetryPrintF("EVR-%s %8.3fs %s (%04x)\n", evrToSeverityStr(e.evr), (float)e.time/1000., evrToStr(e.evr), e.reason);
+        uart1PrintF("EVR-%s %8.3fs %s (%04X)\n", evrToSeverityStr(e.evr), (float)e.time/1000., evrToStr(e.evr), e.reason);
     else
-        telemetryPrintF("EVR:%08x %04x %04x\n", e.time, e.evr, e.reason);
+        uart1PrintF("EVR:%08X %04X %04X\n", e.time, e.evr, e.reason);
 }
 
 ///////////////////////////////////////
 
-void telemetryInit(void)
+void uart1Init(void)
 {
     GPIO_InitTypeDef  GPIO_InitStructure;
     USART_InitTypeDef USART_InitStructure;
     DMA_InitTypeDef   DMA_InitStructure;
     NVIC_InitTypeDef  NVIC_InitStructure;
 
-    GPIO_InitStructure.GPIO_Pin   = UART1_TX_PIN | UART1_RX_PIN;
+    GPIO_InitStructure.GPIO_Pin   = UART1_TX_PIN;
     GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
 
-    GPIO_PinAFConfig(UART1_GPIO, UART1_TX_PINSOURCE, GPIO_AF_7);
-    GPIO_PinAFConfig(UART1_GPIO, UART1_RX_PINSOURCE, GPIO_AF_7);
+    GPIO_PinAFConfig(UART1_TX_GPIO, UART1_TX_PINSOURCE, GPIO_AF_7);
 
-    GPIO_Init(UART1_GPIO, &GPIO_InitStructure);
+    GPIO_Init(UART1_TX_GPIO, &GPIO_InitStructure);
+
+    GPIO_InitStructure.GPIO_Pin   = UART1_RX_PIN;
+  //GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
+  //GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  //GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  //GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
+
+    GPIO_PinAFConfig(UART1_RX_GPIO, UART1_RX_PINSOURCE, GPIO_AF_7);
+
+    GPIO_Init(UART1_RX_GPIO, &GPIO_InitStructure);
 
     // DMA TX Interrupt
     NVIC_InitStructure.NVIC_IRQChannel                   = DMA1_Channel4_IRQn;
@@ -207,23 +217,48 @@ void telemetryInit(void)
 
     USART_Cmd(USART1, ENABLE);
 
-    evrRegisterListener(telemetryListenerCB);
+    evrRegisterListener(uart1ListenerCB);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Telemetry Available
+// UART1 Available
 ///////////////////////////////////////////////////////////////////////////////
 
-uint16_t telemetryAvailable(void)
+uint32_t uart1Available(void)
 {
     return (DMA_GetCurrDataCounter(DMA1_Channel5) != rx1DMAPos) ? true : false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Telemetry Read
+// UART1 Clear Buffer
 ///////////////////////////////////////////////////////////////////////////////
 
-uint8_t telemetryRead(void)
+void uart1ClearBuffer(void)
+{
+    rx1DMAPos = DMA_GetCurrDataCounter(DMA1_Channel5);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// UART1 Number of Characters Available
+///////////////////////////////////////////////////////////////////////////////
+
+uint16_t uart1NumCharsAvailable(void)
+{
+	int32_t number;
+
+	number = rx1DMAPos - DMA_GetCurrDataCounter(DMA1_Channel5);
+
+	if (number >= 0)
+	    return (uint16_t)number;
+	else
+	    return (uint16_t)(UART1_BUFFER_SIZE + number);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// UART1 Read
+///////////////////////////////////////////////////////////////////////////////
+
+uint8_t uart1Read(void)
 {
     uint8_t ch;
 
@@ -236,20 +271,20 @@ uint8_t telemetryRead(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Telemetry Read Poll
+// UART1 Read Poll
 ///////////////////////////////////////////////////////////////////////////////
 
-uint8_t telemetryReadPoll(void)
+uint8_t uart1ReadPoll(void)
 {
-    while (!telemetryAvailable()); // wait for some bytes
-    return telemetryRead();
+    while (!uart1Available()); // wait for some bytes
+    return uart1Read();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Telemetry Write
+// UART1 Write
 ///////////////////////////////////////////////////////////////////////////////
 
-void telemetryWrite(uint8_t ch)
+void uart1Write(uint8_t ch)
 {
     tx1Buffer[tx1BufferHead] = ch;
     tx1BufferHead = (tx1BufferHead + 1) % UART1_BUFFER_SIZE;
@@ -258,10 +293,10 @@ void telemetryWrite(uint8_t ch)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Telemetry Print
+// UART1 Print
 ///////////////////////////////////////////////////////////////////////////////
 
-void telemetryPrint(char *str)
+void uart1Print(char *str)
 {
     while (*str)
     {
@@ -273,11 +308,11 @@ void telemetryPrint(char *str)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Telemetry Print Formatted - Print formatted string to Telemetry Port
+// UART1 Print Formatted - Print formatted string to UART1
 // From Ala42
 ///////////////////////////////////////////////////////////////////////////////
 
-void telemetryPrintF(const char * fmt, ...)
+void uart1PrintF(const char * fmt, ...)
 {
 	char buf[256];
 
@@ -285,15 +320,15 @@ void telemetryPrintF(const char * fmt, ...)
 	va_start (vlist, fmt);
 
 	vsnprintf(buf, sizeof(buf), fmt, vlist);
-	telemetryPrint(buf);
+	uart1Print(buf);
 	va_end(vlist);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Telemetry Print Binary String
+// UART1 Print Binary String
 ///////////////////////////////////////////////////////////////////////////////
 
-void telemetryPrintBinary(uint8_t *buf, uint16_t length)
+void uart1PrintBinary(uint8_t *buf, uint16_t length)
 {
     uint16_t i;
 
