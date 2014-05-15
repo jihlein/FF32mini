@@ -143,7 +143,9 @@ void readCliPID(unsigned char PIDid)
 
 void cliCom(void)
 {
-	uint8_t  index;
+	// HJI uint8_t  index;
+	uint16_t index;
+
 	char mvlkToggleString[5] = { 0, 0, 0, 0, 0 };
 
     if ((cliPortAvailable() && !validCliCommand))
@@ -852,13 +854,43 @@ void cliCom(void)
             ///////////////////////////////
 
             case 'Z': // Not Used
-                cliPortPrintF("Size of sensor EEPROM:  %5ld\n",   numberOfSensorBytes);
-                cliPortPrintF("Number of sensor Pages: %5ld\n",   numberOfSensorPages);
-                cliPortPrintF("Size of system EEPROM:  %5ld\n",   numberOfSystemBytes);
-                cliPortPrintF("Number of system Pages: %5ld\n\n", numberOfSystemPages);
+                cliPortPrintF("Size of sensor EEPROM:  %5ld\n",   NUMBER_OF_SENSOR_BYTES);
+                cliPortPrintF("Number of sensor Pages: %5ld\n",   NUMBER_OF_SENSOR_PAGES);
+                cliPortPrintF("Size of system EEPROM:  %5ld\n",   NUMBER_OF_SYSTEM_BYTES);
+                cliPortPrintF("Number of system Pages: %5ld\n\n", NUMBER_OF_SYSTEM_PAGES);
 
-                cliPortPrintF("Sensor EEPROM Version:  %5ld\n",   sensorEEPROM.data.sensorVersion);
-                cliPortPrintF("System EEPROM Version:  %5ld\n\n", systemEEPROM.data.systemVersion);
+                ///////////////////////
+
+                for (index = 0; index < 32; index++)
+                    cliPortPrintF("%02X", sensorEEPROM.bytes[index]);
+
+                cliPortPrint("\n");
+
+                for (index = 0; index < 32; index++)
+                    cliPortPrintF("%02X", systemEEPROM.bytes[index]);
+
+                cliPortPrint("\n");
+
+                for (index = 256; index < (256 + 32); index++)
+                    cliPortPrintF("%02X", systemEEPROM.bytes[index]);
+
+                cliPortPrint("\n");
+
+                for (index = 512; index < (512 + 32); index++)
+                    cliPortPrintF("%02X", systemEEPROM.bytes[index]);
+
+                cliPortPrint("\n\n");
+
+                ///////////////////////
+
+                cliPortPrintF("Sensor EEPROM Version:  %5ld\n",   sensorEEPROM.value.version);
+                cliPortPrintF("System EEPROM Version:  %5ld\n\n", systemEEPROM.value.version);
+
+                cliPortPrintF("CF A: %6.2f\n",   sensorEEPROM.value.compFilterA);
+                cliPortPrintF("CF B: %6.2f\n\n", sensorEEPROM.value.compFilterB);
+
+                cliPortPrintF("Mixer: %d\n", systemEEPROM.value.mixerConfiguration);
+                cliPortPrintF("ARM Count: %d\n\n", systemEEPROM.value.armCount);
 
                 cliQuery = 'x';
                 break;

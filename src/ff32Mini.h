@@ -348,7 +348,7 @@ typedef struct eepromConfig_t
 
     ///////////////////////////////////
 
-    uint8_t verticalVelocityHoldOnly;
+    uint8_t  verticalVelocityHoldOnly;
 
     ///////////////////////////////////
 

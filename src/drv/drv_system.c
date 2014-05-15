@@ -311,13 +311,27 @@ void systemInit(void)
 
     ///////////////////////////////////////////////////////////////////////////
 
+    spiInit(SPI2);
+
+    ///////////////////////////////////
+
     checkFirstTime(false);
 	readEEPROM();
+
+	//checkSensorEEPROM(false);
+	//checkSystemEEPROM(false);
+
+	//readSensorEEPROM();
+	//readSystemEEPROM();
+
+	///////////////////////////////////
 
 	if (eepromConfig.receiverType == SPEKTRUM)
 		checkSpektrumBind();
 
-    checkResetType();
+    ///////////////////////////////////
+
+	checkResetType();
 
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);  // 2 bits for pre-emption priority, 2 bits for subpriority
 
@@ -385,15 +399,13 @@ void systemInit(void)
 
     ///////////////////////////////////
 
-    checkSensorEEPROM(false);
+	checkSensorEEPROM(false);
 	checkSystemEEPROM(false);
 
-	//readSensorEEPROM();
-	//readSystemEEPROM();
+	readSensorEEPROM();
+	readSystemEEPROM();
 
-	///////////////////////////////////
-
-	adcInit();
+    adcInit();
     aglInit();
     pwmServoInit();
 
@@ -401,8 +413,6 @@ void systemInit(void)
         spektrumInit();
     else
         ppmRxInit();
-
-    spiInit(SPI2);
 
     timingFunctionsInit();
 

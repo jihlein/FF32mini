@@ -59,9 +59,9 @@ enum crcFlags { CRC_HistoryBad = 1 };
 
 ///////////////////////////////////////
 
-typedef struct __attribute__((__packed__)) sensorEEPROM_t
+typedef struct sensorEEPROM_t
 {
-    uint8_t sensorVersion;
+    uint8_t version;
 
     float accelBiasMPU[3];          // Bias for MPU60x0 Accel
     float accelScaleFactorMPU[3];   // Scale factor for MPU60x0 Accel
@@ -92,21 +92,21 @@ typedef struct __attribute__((__packed__)) sensorEEPROM_t
 
     ///////////////////////////////////
 
-    uint8_t  sensorCRCFlags;
-    uint32_t sensorCRCAtEnd[1];
+    uint8_t  CRCFlags;
+    uint32_t CRCAtEnd[1];
 
 } sensorEEPROM_t;
 
 ////////////////////////////////////////
 
-enum {numberOfSensorBytes = sizeof(sensorEEPROM_t)};
+#define NUMBER_OF_SENSOR_BYTES  (sizeof(sensorEEPROM_t))
 
-enum {numberOfSensorPages = (numberOfSensorBytes / 256) + 1};
+#define NUMBER_OF_SENSOR_PAGES  ((NUMBER_OF_SENSOR_BYTES / 256) + 1)
 
 typedef union sensorEEPROM_u
 {
-	sensorEEPROM_t data;
-	uint8_t        bytes[numberOfSensorBytes];
+	sensorEEPROM_t value;
+	uint8_t        bytes[NUMBER_OF_SENSOR_BYTES];
 
 } sensorEEPROM_u;
 
@@ -114,9 +114,9 @@ extern sensorEEPROM_u sensorEEPROM;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef struct __attribute__((__packed__)) systemEEPROM_t
+typedef struct systemEEPROM_t
 {
-	uint8_t systemVersion;
+	uint8_t version;
 
 	float rollAndPitchRateScaling;
 
@@ -191,23 +191,23 @@ typedef struct __attribute__((__packed__)) systemEEPROM_t
 
     ///////////////////////////////////
 
-    uint8_t  systemCRCFlags;
-    uint32_t systemCRCAtEnd[1];
+    uint8_t  CRCFlags;
+    uint32_t CRCAtEnd[1];
 
 } systemEEPROM_t;
 
 ////////////////////////////////////////
 
-enum {numberOfSystemBytes = sizeof(systemEEPROM_t)};
+#define NUMBER_OF_SYSTEM_BYTES  (sizeof(systemEEPROM_t))
 
-enum {numberOfSystemPages = (numberOfSystemBytes / 256) + 1};
+#define NUMBER_OF_SYSTEM_PAGES  ((NUMBER_OF_SYSTEM_BYTES / 256) + 1)
 
 typedef union systemEEPROM_u
 {
-	systemEEPROM_t data;
-	uint8_t        bytes[numberOfSystemBytes];
+	systemEEPROM_t value;
+	uint8_t        bytes[NUMBER_OF_SYSTEM_BYTES];
 
-}   systemEEPROM_u;
+} systemEEPROM_u;
 
 extern systemEEPROM_u systemEEPROM;
 
@@ -218,7 +218,7 @@ extern systemEEPROM_u systemEEPROM;
 void readSensorEEPROM(void);
 
 ///////////////////////////////////////////////////////////////////////////////
-// Write Sesnor EEPROM
+// Write Sensor EEPROM
 ///////////////////////////////////////////////////////////////////////////////
 
 void writeSensorEEPROM(void);

@@ -321,9 +321,9 @@ void mixerCLI()
 
             ///////////////////////////
 
-            case 'W': // Write EEPROM Parameters
-                cliPortPrint("\nWriting EEPROM Parameters....\n\n");
-                writeEEPROM();
+            case 'W': // Write System EEPROM Parameters
+                cliPortPrint("\nWriting System EEPROM Parameters....\n\n");
+                writeSystemEEPROM();
 
                 validQuery = false;
                 break;
