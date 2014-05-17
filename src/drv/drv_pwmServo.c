@@ -80,7 +80,7 @@ void pwmServoInit(void)
 
 // Output timers
 
-    TIM_TimeBaseStructure.TIM_Period            = (uint16_t)(2000000 / eepromConfig.servoPwmRate) - 1;
+    TIM_TimeBaseStructure.TIM_Period            = (uint16_t)(2000000 / systemConfig.servoPwmRate) - 1;
     TIM_TimeBaseStructure.TIM_Prescaler         = 36 - 1;
     TIM_TimeBaseStructure.TIM_ClockDivision     = TIM_CKD_DIV1;
     TIM_TimeBaseStructure.TIM_CounterMode       = TIM_CounterMode_Up;

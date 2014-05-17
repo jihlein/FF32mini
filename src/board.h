@@ -92,7 +92,6 @@
 #include "batMon.h"
 #include "cli.h"
 #include "computeAxisCommands.h"
-#include "config.h"
 #include "coordinateTransforms.h"
 #include "eeprom.h"
 #include "escCalibration.h"

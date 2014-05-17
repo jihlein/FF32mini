@@ -67,38 +67,38 @@ void sensorCLI()
             ///////////////////////////
 
             case 'a': // Sensor Data
-               	cliPortPrintF("MPU Accel Bias:            %9.3f, %9.3f, %9.3f\n", eepromConfig.accelBiasMPU[XAXIS],
-			                                                		              eepromConfig.accelBiasMPU[YAXIS],
-			                                                		              eepromConfig.accelBiasMPU[ZAXIS]);
-			    cliPortPrintF("MPU Accel Scale Factor:    %9.7f, %9.7f, %9.7f\n", eepromConfig.accelScaleFactorMPU[XAXIS],
-							                                                      eepromConfig.accelScaleFactorMPU[YAXIS],
-			                                                		              eepromConfig.accelScaleFactorMPU[ZAXIS]);
-            	cliPortPrintF("Accel Temp Comp Slope:     %9.4f, %9.4f, %9.4f\n", eepromConfig.accelTCBiasSlope[XAXIS],
-            	                                   		                          eepromConfig.accelTCBiasSlope[YAXIS],
-            	                                   		                          eepromConfig.accelTCBiasSlope[ZAXIS]);
-            	cliPortPrintF("Accel Temp Comp Bias:      %9.4f, %9.4f, %9.4f\n", eepromConfig.accelTCBiasIntercept[XAXIS],
-            	                                   		                          eepromConfig.accelTCBiasIntercept[YAXIS],
-            	                                                		          eepromConfig.accelTCBiasIntercept[ZAXIS]);
-            	cliPortPrintF("Gyro Temp Comp Slope:      %9.4f, %9.4f, %9.4f\n", eepromConfig.gyroTCBiasSlope[ROLL ],
-            	                                                                  eepromConfig.gyroTCBiasSlope[PITCH],
-            	                                                                  eepromConfig.gyroTCBiasSlope[YAW  ]);
-            	cliPortPrintF("Gyro Temp Comp Intercept:  %9.4f, %9.4f, %9.4f\n", eepromConfig.gyroTCBiasIntercept[ROLL ],
-            	                                                                  eepromConfig.gyroTCBiasIntercept[PITCH],
-            	                                                                  eepromConfig.gyroTCBiasIntercept[YAW  ]);
-            	cliPortPrintF("Mag Bias:                  %9.4f, %9.4f, %9.4f\n", eepromConfig.magBias[XAXIS],
-                                                		                          eepromConfig.magBias[YAXIS],
-                                                		                          eepromConfig.magBias[ZAXIS]);
+               	cliPortPrintF("MPU Accel Bias:            %9.3f, %9.3f, %9.3f\n", sensorConfig.accelBiasMPU[XAXIS],
+			                                                		              sensorConfig.accelBiasMPU[YAXIS],
+			                                                		              sensorConfig.accelBiasMPU[ZAXIS]);
+			    cliPortPrintF("MPU Accel Scale Factor:    %9.7f, %9.7f, %9.7f\n", sensorConfig.accelScaleFactorMPU[XAXIS],
+							                                                      sensorConfig.accelScaleFactorMPU[YAXIS],
+			                                                		              sensorConfig.accelScaleFactorMPU[ZAXIS]);
+            	cliPortPrintF("Accel Temp Comp Slope:     %9.4f, %9.4f, %9.4f\n", sensorConfig.accelTCBiasSlope[XAXIS],
+            	                                   		                          sensorConfig.accelTCBiasSlope[YAXIS],
+            	                                   		                          sensorConfig.accelTCBiasSlope[ZAXIS]);
+            	cliPortPrintF("Accel Temp Comp Bias:      %9.4f, %9.4f, %9.4f\n", sensorConfig.accelTCBiasIntercept[XAXIS],
+            	                                   		                          sensorConfig.accelTCBiasIntercept[YAXIS],
+            	                                                		          sensorConfig.accelTCBiasIntercept[ZAXIS]);
+            	cliPortPrintF("Gyro Temp Comp Slope:      %9.4f, %9.4f, %9.4f\n", sensorConfig.gyroTCBiasSlope[ROLL ],
+            	                                                                  sensorConfig.gyroTCBiasSlope[PITCH],
+            	                                                                  sensorConfig.gyroTCBiasSlope[YAW  ]);
+            	cliPortPrintF("Gyro Temp Comp Intercept:  %9.4f, %9.4f, %9.4f\n", sensorConfig.gyroTCBiasIntercept[ROLL ],
+            	                                                                  sensorConfig.gyroTCBiasIntercept[PITCH],
+            	                                                                  sensorConfig.gyroTCBiasIntercept[YAW  ]);
+            	cliPortPrintF("Mag Bias:                  %9.4f, %9.4f, %9.4f\n", sensorConfig.magBias[XAXIS],
+                                                		                          sensorConfig.magBias[YAXIS],
+                                                		                          sensorConfig.magBias[ZAXIS]);
                 cliPortPrintF("Accel One G:               %9.4f\n",   accelOneG);
-                cliPortPrintF("Accel Cutoff:              %9.4f\n",   eepromConfig.accelCutoff);
-                cliPortPrintF("KpAcc (MARG):              %9.4f\n",   eepromConfig.KpAcc);
-                cliPortPrintF("KiAcc (MARG):              %9.4f\n",   eepromConfig.KiAcc);
-                cliPortPrintF("KpMag (MARG):              %9.4f\n",   eepromConfig.KpMag);
-                cliPortPrintF("KiMag (MARG):              %9.4f\n",   eepromConfig.KiMag);
-                cliPortPrintF("hdot est/h est Comp Fil A: %9.4f\n",   eepromConfig.compFilterA);
-                cliPortPrintF("hdot est/h est Comp Fil B: %9.4f\n",   eepromConfig.compFilterB);
+                cliPortPrintF("Accel Cutoff:              %9.4f\n",   sensorConfig.accelCutoff);
+                cliPortPrintF("KpAcc (MARG):              %9.4f\n",   sensorConfig.KpAcc);
+                cliPortPrintF("KiAcc (MARG):              %9.4f\n",   sensorConfig.KiAcc);
+                cliPortPrintF("KpMag (MARG):              %9.4f\n",   sensorConfig.KpMag);
+                cliPortPrintF("KiMag (MARG):              %9.4f\n",   sensorConfig.KiMag);
+                cliPortPrintF("hdot est/h est Comp Fil A: %9.4f\n",   sensorConfig.compFilterA);
+                cliPortPrintF("hdot est/h est Comp Fil B: %9.4f\n",   sensorConfig.compFilterB);
 
                 cliPortPrint("MPU6000 DLPF:                 ");
-                switch(eepromConfig.dlpfSetting)
+                switch(sensorConfig.dlpfSetting)
                 {
                     case DLPF_256HZ:
                         cliPortPrint("256 Hz\n");
@@ -114,18 +114,23 @@ void sensorCLI()
                         break;
                 }
 
-                if (eepromConfig.verticalVelocityHoldOnly)
+                cliPortPrintF("Voltage Monitor Scale:     %9.4f\n\n",  sensorConfig.voltageMonitorScale);
+                cliPortPrintF("Voltage Monitor Bias:      %9.4f\n",    sensorConfig.voltageMonitorBias);
+                cliPortPrintF("Number of Battery Cells:      %1d\n\n", sensorConfig.batteryCells);
+
+                cliPortPrintF("Battery Low Setpoint:      %4.2f volts\n",   sensorConfig.batteryLow);
+                cliPortPrintF("Battery Very Low Setpoint: %4.2f volts\n",   sensorConfig.batteryVeryLow);
+                cliPortPrintF("Battery Max Low Setpoint:  %4.2f volts\n\n", sensorConfig.batteryMaxLow);
+
+                if (sensorConfig.gpsVelocityHoldOnly)
+                	cliPortPrint("GPS Velocity Hold Only\n");
+                else
+                	cliPortPrint("GPS Velocity and Position Hold\n");
+
+                if (sensorConfig.verticalVelocityHoldOnly)
                 	cliPortPrint("Vertical Velocity Hold Only\n\n");
                 else
                 	cliPortPrint("Vertical Velocity and Altitude Hold\n\n");
-
-                cliPortPrintF("Voltage Monitor Scale:     %9.4f\n",    eepromConfig.voltageMonitorScale);
-                cliPortPrintF("Voltage Monitor Bias:      %9.4f\n",    eepromConfig.voltageMonitorBias);
-                cliPortPrintF("Number of Battery Cells:      %1d\n\n", eepromConfig.batteryCells);
-
-                cliPortPrintF("Battery Low Setpoint:      %4.2f volts\n",   eepromConfig.batteryLow);
-                cliPortPrintF("Battery Very Low Setpoint: %4.2f volts\n",   eepromConfig.batteryVeryLow);
-                cliPortPrintF("Battery Max Low Setpoint:  %4.2f volts\n\n", eepromConfig.batteryMaxLow);
 
                 validQuery = false;
                 break;
@@ -157,13 +162,25 @@ void sensorCLI()
                 validQuery = true;
                 break;
 
-            ///////////////////////////
+             ///////////////////////////
+
+            case 'g': // Toggle GPS Velocity Hold Only
+                if (sensorConfig.gpsVelocityHoldOnly)
+                	sensorConfig.gpsVelocityHoldOnly = false;
+                else
+                	sensorConfig.gpsVelocityHoldOnly = true;
+
+                sensorQuery = 'a';
+                validQuery = true;
+                break;
+
+           ///////////////////////////
 
             case 'v': // Toggle Vertical Velocity Hold Only
-                if (eepromConfig.verticalVelocityHoldOnly)
-                	eepromConfig.verticalVelocityHoldOnly = false;
+                if (sensorConfig.verticalVelocityHoldOnly)
+                	sensorConfig.verticalVelocityHoldOnly = false;
                 else
-                	eepromConfig.verticalVelocityHoldOnly = true;
+                	sensorConfig.verticalVelocityHoldOnly = true;
 
                 sensorQuery = 'a';
                 validQuery = true;
@@ -185,19 +202,19 @@ void sensorCLI()
                 switch(tempInt)
                 {
                     case DLPF_256HZ:
-                        eepromConfig.dlpfSetting = BITS_DLPF_CFG_256HZ;
+                        sensorConfig.dlpfSetting = BITS_DLPF_CFG_256HZ;
                         break;
 
                     case DLPF_188HZ:
-                    	eepromConfig.dlpfSetting = BITS_DLPF_CFG_188HZ;
+                    	sensorConfig.dlpfSetting = BITS_DLPF_CFG_188HZ;
                     	break;
 
                     case DLPF_98HZ:
-                    	eepromConfig.dlpfSetting = BITS_DLPF_CFG_98HZ;
+                    	sensorConfig.dlpfSetting = BITS_DLPF_CFG_98HZ;
                     	break;
 
                     case DLPF_42HZ:
-                    	eepromConfig.dlpfSetting = BITS_DLPF_CFG_42HZ;
+                    	sensorConfig.dlpfSetting = BITS_DLPF_CFG_42HZ;
                      	break;
                 }
 
@@ -205,7 +222,7 @@ void sensorCLI()
 
                 GPIO_ResetBits(MPU6000_CS_GPIO, MPU6000_CS_PIN);
 			    spiTransfer(MPU6000_SPI, MPU6000_CONFIG);
-			    spiTransfer(MPU6000_SPI, eepromConfig.dlpfSetting);
+			    spiTransfer(MPU6000_SPI, sensorConfig.dlpfSetting);
 			    GPIO_SetBits(MPU6000_CS_GPIO, MPU6000_CS_PIN);
 
                 setSPIdivisor(MPU6000_SPI, 2);  // 21 MHz SPI clock (within 20 +/- 10%)
@@ -217,7 +234,7 @@ void sensorCLI()
             ///////////////////////////
 
             case 'B': // Accel Cutoff
-                eepromConfig.accelCutoff = readFloatCLI();
+                sensorConfig.accelCutoff = readFloatCLI();
 
                 sensorQuery = 'a';
                 validQuery = true;
@@ -226,8 +243,8 @@ void sensorCLI()
             ///////////////////////////
 
             case 'C': // kpAcc, kiAcc
-                eepromConfig.KpAcc = readFloatCLI();
-                eepromConfig.KiAcc = readFloatCLI();
+                sensorConfig.KpAcc = readFloatCLI();
+                sensorConfig.KiAcc = readFloatCLI();
 
                 sensorQuery = 'a';
                 validQuery = true;
@@ -236,8 +253,8 @@ void sensorCLI()
             ///////////////////////////
 
             case 'D': // kpMag, kiMag
-                eepromConfig.KpMag = readFloatCLI();
-                eepromConfig.KiMag = readFloatCLI();
+                sensorConfig.KpMag = readFloatCLI();
+                sensorConfig.KiMag = readFloatCLI();
 
                 sensorQuery = 'a';
                 validQuery = true;
@@ -246,8 +263,8 @@ void sensorCLI()
             ///////////////////////////
 
             case 'E': // h dot est/h est Comp Filter A/B
-                eepromConfig.compFilterA = readFloatCLI();
-                eepromConfig.compFilterB = readFloatCLI();
+                sensorConfig.compFilterA = readFloatCLI();
+                sensorConfig.compFilterB = readFloatCLI();
 
                 sensorQuery = 'a';
                 validQuery = true;
@@ -256,13 +273,13 @@ void sensorCLI()
             ///////////////////////////
 
             case 'M': // Set Voltage Monitor Trip Points
-                eepromConfig.batteryLow     = readFloatCLI();
-                eepromConfig.batteryVeryLow = readFloatCLI();
-                eepromConfig.batteryMaxLow  = readFloatCLI();
+                sensorConfig.batteryLow     = readFloatCLI();
+                sensorConfig.batteryVeryLow = readFloatCLI();
+                sensorConfig.batteryMaxLow  = readFloatCLI();
 
-                thresholds[BATTERY_LOW].value      = eepromConfig.batteryLow;
-                thresholds[BATTERY_VERY_LOW].value = eepromConfig.batteryVeryLow;
-                thresholds[BATTRY_MAX_LOW].value   = eepromConfig.batteryMaxLow;
+                thresholds[BATTERY_LOW].value      = sensorConfig.batteryLow;
+                thresholds[BATTERY_VERY_LOW].value = sensorConfig.batteryVeryLow;
+                thresholds[BATTRY_MAX_LOW].value   = sensorConfig.batteryMaxLow;
 
                 sensorQuery = 'a';
                 validQuery = true;
@@ -271,9 +288,9 @@ void sensorCLI()
             ///////////////////////////
 
             case 'V': // Set Voltage Monitor Parameters
-                eepromConfig.voltageMonitorScale = readFloatCLI();
-                eepromConfig.voltageMonitorBias  = readFloatCLI();
-                eepromConfig.batteryCells        = (uint8_t)readFloatCLI();
+                sensorConfig.voltageMonitorScale = readFloatCLI();
+                sensorConfig.voltageMonitorBias  = readFloatCLI();
+                sensorConfig.batteryCells        = (uint8_t)readFloatCLI();
 
                 sensorQuery = 'a';
                 validQuery = true;
@@ -281,9 +298,9 @@ void sensorCLI()
 
             ///////////////////////////
 
-            case 'W': // Write EEPROM Parameters
-                cliPortPrint("\nWriting EEPROM Parameters....\n\n");
-                writeEEPROM();
+            case 'W': // Write Sensor EEPROM Parameters
+                cliPortPrint("\nWriting Sensor EEPROM Parameters....\n\n");
+                writeSensorEEPROM();
 
                 validQuery = false;
                 break;
@@ -297,7 +314,7 @@ void sensorCLI()
 			   	cliPortPrint("'c' Magnetometer Calibration               'C' Set kpAcc/kiAcc                      CKpAcc;KiAcc\n");
 			   	cliPortPrint("'d' Accel Bias and SF Calibration          'D' Set kpMag/kiMag                      DKpMag;KiMag\n");
 			   	cliPortPrint("                                           'E' Set h dot est/h est Comp Filter A/B  EA;B\n");
-			   	cliPortPrint("                                           'M' Set Voltage Monitor Trip Points      Mlow;veryLow;maxLow\n");
+			   	cliPortPrint("'g' Toggle GPS Velocity Hold Only          'M' Set Voltage Monitor Trip Points      Mlow;veryLow;maxLow\n");
 			   	cliPortPrint("'v' Toggle Vertical Velocity Hold Only     'V' Set Voltage Monitor Parameters       Vscale;bias;cells\n");
 			    cliPortPrint("                                           'W' Write EEPROM Parameters\n");
 			    cliPortPrint("'x' Exit Sensor CLI                        '?' Command Summary\n");

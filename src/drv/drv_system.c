@@ -315,18 +315,15 @@ void systemInit(void)
 
     ///////////////////////////////////
 
-    checkFirstTime(false);
-	readEEPROM();
+    checkSensorEEPROM(false);
+	checkSystemEEPROM(false);
 
-	//checkSensorEEPROM(false);
-	//checkSystemEEPROM(false);
-
-	//readSensorEEPROM();
-	//readSystemEEPROM();
+	readSensorEEPROM();
+	readSystemEEPROM();
 
 	///////////////////////////////////
 
-	if (eepromConfig.receiverType == SPEKTRUM)
+	if (systemConfig.receiverType == SPEKTRUM)
 		checkSpektrumBind();
 
     ///////////////////////////////////
@@ -388,7 +385,7 @@ void systemInit(void)
     cliPortPrintF(  "PCLK2->  %2d MHz\n",   rccClocks.PCLK2_Frequency  / 1000000);
     cliPortPrintF(  "SYSCLK-> %2d MHz\n\n", rccClocks.SYSCLK_Frequency / 1000000);
 
-    if (eepromConfig.receiverType == PPM)
+    if (systemConfig.receiverType == PPM)
     	cliPortPrint("Using PPM Receiver....\n\n");
     else
     	cliPortPrint("Using Spektrum Satellite Receiver....\n\n");
@@ -399,17 +396,11 @@ void systemInit(void)
 
     ///////////////////////////////////
 
-	checkSensorEEPROM(false);
-	checkSystemEEPROM(false);
-
-	readSensorEEPROM();
-	readSystemEEPROM();
-
-    adcInit();
+	adcInit();
     aglInit();
     pwmServoInit();
 
-    if (eepromConfig.receiverType == SPEKTRUM)
+    if (systemConfig.receiverType == SPEKTRUM)
         spektrumInit();
     else
         ppmRxInit();

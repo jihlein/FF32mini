@@ -89,7 +89,7 @@ void pwmEscInit(void)
 
     // Output timers
 
-	TIM_TimeBaseStructure.TIM_Period            = (uint16_t)(2000000 / eepromConfig.escPwmRate) - 1;
+	TIM_TimeBaseStructure.TIM_Period            = (uint16_t)(2000000 / systemConfig.escPwmRate) - 1;
     TIM_TimeBaseStructure.TIM_Prescaler         = 36 - 1;
     TIM_TimeBaseStructure.TIM_ClockDivision     = TIM_CKD_DIV1;
     TIM_TimeBaseStructure.TIM_CounterMode       = TIM_CounterMode_Up;
@@ -117,10 +117,10 @@ void pwmEscInit(void)
     TIM_Cmd(TIM15, ENABLE);
     TIM_CtrlPWMOutputs(TIM15, ENABLE);
 
-    if (eepromConfig.mixerConfiguration == MIXERTYPE_TRI)
+    if (systemConfig.mixerConfiguration == MIXERTYPE_TRI)
 	{
-	    TIM_TimeBaseStructure.TIM_Period = (uint16_t)(2000000 / eepromConfig.triYawServoPwmRate) - 1;
-		TIM_OCInitStructure.TIM_Pulse    = eepromConfig.triYawServoMid;
+	    TIM_TimeBaseStructure.TIM_Period = (uint16_t)(2000000 / systemConfig.triYawServoPwmRate) - 1;
+		TIM_OCInitStructure.TIM_Pulse    = systemConfig.triYawServoMid;
 	}
 
 	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);

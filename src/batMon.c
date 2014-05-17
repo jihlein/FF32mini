@@ -50,16 +50,16 @@ static int thresholdCount[thresholdsNUM]; /* Will be inited to zero */
 
 void measureBattery(void)
 {
-    batteryVoltage = voltageMonitor() * VOLTS_PER_BIT * (eepromConfig.voltageMonitorScale) + eepromConfig.voltageMonitorBias;
+    batteryVoltage = voltageMonitor() * VOLTS_PER_BIT * (sensorConfig.voltageMonitorScale) + sensorConfig.voltageMonitorBias;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 void batteryInit(void)
 {
-    thresholds[BATTERY_LOW].value      = eepromConfig.batteryLow;
-    thresholds[BATTERY_VERY_LOW].value = eepromConfig.batteryVeryLow;
-    thresholds[BATTRY_MAX_LOW].value   = eepromConfig.batteryMaxLow;
+    thresholds[BATTERY_LOW].value      = sensorConfig.batteryLow;
+    thresholds[BATTERY_VERY_LOW].value = sensorConfig.batteryVeryLow;
+    thresholds[BATTRY_MAX_LOW].value   = sensorConfig.batteryMaxLow;
 
     thresholds[BATTERY_LOW].func      = batMonLow;
     thresholds[BATTERY_VERY_LOW].func = batMonVeryLow;
@@ -67,10 +67,10 @@ void batteryInit(void)
 
     measureBattery();
 
-    if (eepromConfig.batteryCells == 0)
+    if (sensorConfig.batteryCells == 0)
         batteryNumCells = batteryVoltage / 3;
     else
-        batteryNumCells = eepromConfig.batteryCells;
+        batteryNumCells = sensorConfig.batteryCells;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

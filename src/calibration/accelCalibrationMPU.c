@@ -184,14 +184,14 @@ void accelCalibrationMPU(void)
 
     ///////////////////////////////////
 
-    eepromConfig.accelBiasMPU[ZAXIS]        = (rightSideUp + upSideDown) / 2.0f;
-    eepromConfig.accelScaleFactorMPU[ZAXIS] = (2.0f * 9.8065f) / fabsf(rightSideUp - upSideDown);
+    sensorConfig.accelBiasMPU[ZAXIS]        = (rightSideUp + upSideDown) / 2.0f;
+    sensorConfig.accelScaleFactorMPU[ZAXIS] = (2.0f * 9.8065f) / fabsf(rightSideUp - upSideDown);
 
-    eepromConfig.accelBiasMPU[YAXIS]        = (leftWingDown + rightWingDown) / 2.0f;
-    eepromConfig.accelScaleFactorMPU[YAXIS] = (2.0f * 9.8065f) / fabsf(leftWingDown - rightWingDown);
+    sensorConfig.accelBiasMPU[YAXIS]        = (leftWingDown + rightWingDown) / 2.0f;
+    sensorConfig.accelScaleFactorMPU[YAXIS] = (2.0f * 9.8065f) / fabsf(leftWingDown - rightWingDown);
 
-    eepromConfig.accelBiasMPU[XAXIS]        = (noseUp + noseDown) / 2.0f;
-    eepromConfig.accelScaleFactorMPU[XAXIS] = (2.0f * 9.8065f) / fabsf(noseUp - noseDown);
+    sensorConfig.accelBiasMPU[XAXIS]        = (noseUp + noseDown) / 2.0f;
+    sensorConfig.accelScaleFactorMPU[XAXIS] = (2.0f * 9.8065f) / fabsf(noseUp - noseDown);
 
     ///////////////////////////////////
 

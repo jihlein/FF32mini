@@ -163,8 +163,8 @@ void MargAHRSupdate(float gx, float gy, float gz,
         if (norm != 0.0f)
         {
 			calculateAccConfidence(norm);
-            kpAcc = eepromConfig.KpAcc * accConfidence;
-            kiAcc = eepromConfig.KiAcc * accConfidence;
+            kpAcc = sensorConfig.KpAcc * accConfidence;
+            kiAcc = sensorConfig.KiAcc * accConfidence;
 
             normR = 1.0f / norm;
             ax *= normR;
@@ -234,15 +234,15 @@ void MargAHRSupdate(float gx, float gy, float gz,
 			// use un-extrapolated old values between magnetometer updates
 			// dubious as dT does not apply to the magnetometer calculation so
 			// time scaling is embedded in KpMag and KiMag
-			gx += exMag * eepromConfig.KpMag;
-			gy += eyMag * eepromConfig.KpMag;
-			gz += ezMag * eepromConfig.KpMag;
+			gx += exMag * sensorConfig.KpMag;
+			gy += eyMag * sensorConfig.KpMag;
+			gz += ezMag * sensorConfig.KpMag;
 
-			if (eepromConfig.KiMag > 0.0f)
+			if (sensorConfig.KiMag > 0.0f)
 			{
-				exMagInt += exMag * eepromConfig.KiMag;
-				eyMagInt += eyMag * eepromConfig.KiMag;
-				ezMagInt += ezMag * eepromConfig.KiMag;
+				exMagInt += exMag * sensorConfig.KiMag;
+				eyMagInt += eyMag * sensorConfig.KiMag;
+				ezMagInt += ezMag * sensorConfig.KiMag;
 
 				gx += exMagInt;
 				gy += eyMagInt;

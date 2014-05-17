@@ -69,54 +69,54 @@ int8_t parse_hex(char c)
 
 void cliPrintSensorEEPROM(void)
 {
-    uint32_t old_crc = sensorEEPROM.value.CRCAtEnd[0];
+    uint32_t old_crc = sensorConfig.CRCAtEnd[0];
 
-    uint8_t *by = (uint8_t*)&sensorEEPROM;
+    uint8_t *by = (uint8_t*)&sensorConfig;
 
     int i, j;
 
-    sensorEEPROM.value.CRCAtEnd[0] = crc32B((uint32_t*)(&sensorEEPROM),                  // CRC32B[sensorEEPROM]
-                                            (uint32_t*)(&sensorEEPROM.value.CRCAtEnd));
+    sensorConfig.CRCAtEnd[0] = crc32B((uint32_t*)(&sensorConfig),                  // CRC32B[sensorConfig]
+                                      (uint32_t*)(&sensorConfig.CRCAtEnd));
 
-    if (sensorEEPROM.value.CRCFlags & CRC_HistoryBad)
+    if (sensorConfig.CRCFlags & CRC_HistoryBad)
       evrPush(EVR_ConfigBadHistory, 0);
 
-    for (i = 0; i < ceil((float)NUMBER_OF_SENSOR_BYTES / LINE_LENGTH); i++)
+    for (i = 0; i < ceil((float)sizeof(sensorConfig) / LINE_LENGTH); i++)
     {
-        for (j = 0; j < min(LINE_LENGTH, NUMBER_OF_SENSOR_BYTES - LINE_LENGTH * i); j++)
+        for (j = 0; j < min(LINE_LENGTH, sizeof(sensorConfig) - LINE_LENGTH * i); j++)
             cliPortPrintF("%02X", by[i * LINE_LENGTH + j]);
 
         cliPortPrint("\n");
     }
 
-    sensorEEPROM.value.CRCAtEnd[0] = old_crc;
+    sensorConfig.CRCAtEnd[0] = old_crc;
 }
 
 ///////////////////////////////////////
 
-void cliPrintSystemEEPROM(void)
+void cliPrintSystemConfig(void)
 {
-    uint32_t old_crc = systemEEPROM.value.CRCAtEnd[0];
+    uint32_t old_crc = systemConfig.CRCAtEnd[0];
 
-    uint8_t *by = (uint8_t*)&systemEEPROM;
+    uint8_t *by = (uint8_t*)&systemConfig;
 
     int i, j;
 
-     systemEEPROM.value.CRCAtEnd[0] = crc32B((uint32_t*)(&systemEEPROM),                  // CRC32B[systemEEPROM]
-                                             (uint32_t*)(&systemEEPROM.value.CRCAtEnd));
+     systemConfig.CRCAtEnd[0] = crc32B((uint32_t*)(&systemConfig),                  // CRC32B[systemConfig]
+                                       (uint32_t*)(&systemConfig.CRCAtEnd));
 
-    if (systemEEPROM.value.CRCFlags & CRC_HistoryBad)
+    if (systemConfig.CRCFlags & CRC_HistoryBad)
       evrPush(EVR_ConfigBadHistory, 0);
 
-    for (i = 0; i < ceil((float)NUMBER_OF_SYSTEM_BYTES / LINE_LENGTH); i++)
+    for (i = 0; i < ceil((float)sizeof(systemConfig) / LINE_LENGTH); i++)
     {
-        for (j = 0; j < min(LINE_LENGTH, NUMBER_OF_SYSTEM_BYTES - LINE_LENGTH * i); j++)
+        for (j = 0; j < min(LINE_LENGTH, sizeof(systemConfig) - LINE_LENGTH * i); j++)
             cliPortPrintF("%02X", by[i * LINE_LENGTH + j]);
 
         cliPortPrint("\n");
     }
 
-    systemEEPROM.value.CRCAtEnd[0] = old_crc;
+    systemConfig.CRCAtEnd[0] = old_crc;
 }
 
 ///////////////////////////////////////
@@ -125,9 +125,9 @@ void eepromCLI()
 {
 	char c;
 
-	sensorEEPROM_u sensorRam;
+	sensorConfig_t sensorRam;
 
-	systemEEPROM_u systemRam;
+	systemConfig_t systemRam;
 
 	uint8_t  eepromQuery = 'x';
 
@@ -171,14 +171,14 @@ void eepromCLI()
             ///////////////////////////
 
             case 'a': // config struct data
-                c1 = sensorEEPROM.value.CRCAtEnd[0];
+                c1 = sensorConfig.CRCAtEnd[0];
 
-                c2 = crc32B((uint32_t*)(&sensorEEPROM),                  // CRC32B[sensorEEPROM]
-                            (uint32_t*)(&sensorEEPROM.value.CRCAtEnd));
+                c2 = crc32B((uint32_t*)(&sensorConfig),                  // CRC32B[sensorConfig]
+                            (uint32_t*)(&sensorConfig.CRCAtEnd));
 
                 cliPortPrintF("Sensor EEPROM structure information:\n");
-                cliPortPrintF("Version          : %d\n", sensorEEPROM.value.version);
-                cliPortPrintF("Size             : %d\n", NUMBER_OF_SENSOR_BYTES);
+                cliPortPrintF("Version          : %d\n", sensorConfig.version);
+                cliPortPrintF("Size             : %d\n", sizeof(sensorConfig));
                 cliPortPrintF("CRC on last read : %08X\n", c1);
                 cliPortPrintF("Current CRC      : %08X\n", c2);
 
@@ -186,7 +186,7 @@ void eepromCLI()
                     cliPortPrintF("  CRCs differ. Current Sensor Config has not yet been saved.\n");
 
                 cliPortPrintF("CRC Flags :\n");
-                cliPortPrintF("  History Bad    : %s\n", sensorEEPROM.value.CRCFlags & CRC_HistoryBad ? "true" : "false" );
+                cliPortPrintF("  History Bad    : %s\n", sensorConfig.CRCFlags & CRC_HistoryBad ? "true" : "false" );
 
                 validQuery = false;
                 break;
@@ -202,8 +202,8 @@ void eepromCLI()
 
                 cliPortPrintF("\n");
 
-                if (crcCheckVal != crc32B((uint32_t*)(&sensorEEPROM),       // CRC32B[sensorEEPROM CRC32B[sensorEEPROM]]
-                                          (uint32_t*)(&sensorEEPROM + 1)))
+                if (crcCheckVal != crc32B((uint32_t*)(&sensorConfig),       // CRC32B[sensorConfig CRC32B[sensorConfig]]
+                                          (uint32_t*)(&sensorConfig + 1)))
                 {
                     cliPortPrint("NOTE: in-memory sensor config CRC invalid; there have probably been\n");
                     cliPortPrint("      changes to sensor config since the last write to flash/eeprom.\n");
@@ -228,7 +228,7 @@ void eepromCLI()
 
                 secondNibble = 0;
 
-                size = NUMBER_OF_SENSOR_BYTES;
+                size = sizeof(sensorConfig);
 
                 time = millis();
 
@@ -283,8 +283,8 @@ void eepromCLI()
                     cliPortPrintF("Invalid character found at position %d: '%c' (0x%02x)",
                         charsEncountered, c, c);
                 }
-                else if (crcCheckVal != crc32B((uint32_t*)(&sensorEEPROM),       // CRC32B[sensorEEPROM CRC32B[sensorEEPROM]]
-                                               (uint32_t*)(&sensorEEPROM + 1)))
+                else if (crcCheckVal != crc32B((uint32_t*)(&sensorConfig),       // CRC32B[sensorConfig CRC32B[sensorConfig]]
+                                               (uint32_t*)(&sensorConfig + 1)))
                 {
                     cliPortPrintF("CRC mismatch! Not writing to in-memory config.\n");
                     cliPortPrintF("Here's what was received:\n\n");
@@ -296,7 +296,7 @@ void eepromCLI()
                     // actually differs from what's in-memory
 
                     for (i = 0; i < size; i++)
-                        if (((uint8_t*)&sensorRam)[i] != ((uint8_t*)&sensorEEPROM)[i])
+                        if (((uint8_t*)&sensorRam)[i] != ((uint8_t*)&sensorConfig)[i])
                             break;
 
                     if (i == size)
@@ -305,7 +305,7 @@ void eepromCLI()
                     }
                     else
                     {
-                        sensorEEPROM = sensorRam;
+                        sensorConfig = sensorRam;
                         cliPortPrintF("Sensor RAM Config updated!\n");
                         cliPortPrintF("NOTE: Sensor Config not written to EEPROM; use 'w' to do so.\n");
                     }
@@ -328,7 +328,7 @@ void eepromCLI()
 
             case 'h': // Clear Bad Sensor History Flag
                 cliPortPrintF("Clearing Bad Sensor History Flag.\n");
-                sensorEEPROM.value.CRCFlags &= ~CRC_HistoryBad;
+                sensorConfig.CRCFlags &= ~CRC_HistoryBad;
                 validQuery = false;
                 break;
 
@@ -360,17 +360,17 @@ void eepromCLI()
             ///////////////////////////
 
             case 'A': // config struct data
-                c1 = systemEEPROM.value.CRCAtEnd[0];
+                c1 = systemConfig.CRCAtEnd[0];
 
                 zeroPIDintegralError();
                 zeroPIDstates();
 
-                c2 = crc32B((uint32_t*)(&systemEEPROM),                  // CRC32B[systemEEPROM]
-                            (uint32_t*)(&systemEEPROM.value.CRCAtEnd));
+                c2 = crc32B((uint32_t*)(&systemConfig),                  // CRC32B[systemConfig]
+                            (uint32_t*)(&systemConfig.CRCAtEnd));
 
                 cliPortPrintF("System EEPROM structure information:\n");
-                cliPortPrintF("Version          : %d\n", systemEEPROM.value.version);
-                cliPortPrintF("Size             : %d\n", NUMBER_OF_SYSTEM_BYTES);
+                cliPortPrintF("Version          : %d\n", systemConfig.version);
+                cliPortPrintF("Size             : %d\n", sizeof(systemConfig));
                 cliPortPrintF("CRC on last read : %08X\n", c1);
                 cliPortPrintF("Current CRC      : %08X\n", c2);
 
@@ -378,7 +378,7 @@ void eepromCLI()
                     cliPortPrintF("  CRCs differ. Current SystemConfig has not yet been saved.\n");
 
                 cliPortPrintF("CRC Flags :\n");
-                cliPortPrintF("  History Bad    : %s\n", systemEEPROM.value.CRCFlags & CRC_HistoryBad ? "true" : "false" );
+                cliPortPrintF("  History Bad    : %s\n", systemConfig.CRCFlags & CRC_HistoryBad ? "true" : "false" );
 
                 validQuery = false;
                 break;
@@ -395,12 +395,12 @@ void eepromCLI()
 
                 cliPortPrintF("\n");
 
-                cliPrintSystemEEPROM();
+                cliPrintSystemConfig();
 
                 cliPortPrintF("\n");
 
-                if (crcCheckVal != crc32B((uint32_t*)(&systemEEPROM),       // CRC32B[systemEEPROM CRC32B[systemEEPROM]]
-                                          (uint32_t*)(&systemEEPROM + 1)))
+                if (crcCheckVal != crc32B((uint32_t*)(&systemConfig),       // CRC32B[systemConfig CRC32B[systemConfig]]
+                                          (uint32_t*)(&systemConfig + 1)))
                 {
                     cliPortPrint("NOTE: in-memory system config CRC invalid; there have probably been\n");
                     cliPortPrint("      changes to system config since the last write to flash/eeprom.\n");
@@ -425,7 +425,7 @@ void eepromCLI()
 
             	secondNibble = 0;
 
-            	size = NUMBER_OF_SYSTEM_BYTES;
+            	size = sizeof(systemConfig);
 
                 time = millis();
 
@@ -480,12 +480,12 @@ void eepromCLI()
                     cliPortPrintF("Invalid character found at position %d: '%c' (0x%02x)",
                         charsEncountered, c, c);
                 }
-                else if (crcCheckVal != crc32B((uint32_t*)(&systemEEPROM),       // CRC32B[systemEEPROM CRC32B[systemEEPROM]]
-                                               (uint32_t*)(&systemEEPROM + 1)))
+                else if (crcCheckVal != crc32B((uint32_t*)(&systemConfig),       // CRC32B[systemConfig CRC32B[systemConfig]]
+                                               (uint32_t*)(&systemConfig + 1)))
                 {
                     cliPortPrintF("CRC mismatch! Not writing to in-memory config.\n");
                     cliPortPrintF("Here's what was received:\n\n");
-                    cliPrintSystemEEPROM();
+                    cliPrintSystemConfig();
                 }
                 else
                 {
@@ -495,7 +495,7 @@ void eepromCLI()
                     zeroPIDstates();
 
                     for (i = 0; i < size; i++)
-                        if (((uint8_t*)&systemRam)[i] != ((uint8_t*)&systemEEPROM)[i])
+                        if (((uint8_t*)&systemRam)[i] != ((uint8_t*)&systemConfig)[i])
                             break;
 
                     if (i == size)
@@ -504,7 +504,7 @@ void eepromCLI()
                     }
                     else
                     {
-                        systemEEPROM = systemRam;
+                        systemConfig = systemRam;
                         cliPortPrintF("System RAM Config updated!\n");
                         cliPortPrintF("NOTE: System Config not written to EEPROM; use 'W' to do so.\n");
                     }
@@ -527,7 +527,7 @@ void eepromCLI()
 
             case 'H': // Clear Bad System History Flag
                 cliPortPrintF("Clearing Bad System History Flag.\n");
-                systemEEPROM.value.CRCFlags &= ~CRC_HistoryBad;
+                systemConfig.CRCFlags &= ~CRC_HistoryBad;
                 validQuery = false;
                 break;
 

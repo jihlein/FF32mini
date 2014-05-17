@@ -94,12 +94,12 @@ void escCalibration(void)
 		{
 			case 'h':
 			    cliPortPrint("Applying Max Command....\n\n");
-			    writeAllMotors(eepromConfig.maxThrottle);
+			    writeAllMotors(systemConfig.maxThrottle);
 			    break;
 
 			case 'm':
 			    cliPortPrint("Applying Mid Command....\n\n");
-			    writeAllMotors(eepromConfig.midCommand);
+			    writeAllMotors(systemConfig.midCommand);
 			    break;
 
 			case 'l':
@@ -121,32 +121,32 @@ void escCalibration(void)
 
 			case '1':
 				cliPortPrint("Motor1 at Min Throttle....\n\n");
-				pwmEscWrite(0, eepromConfig.minThrottle);
+				pwmEscWrite(0, systemConfig.minThrottle);
 				break;
 
 			case '2':
 				cliPortPrint("Motor2 at Min Throttle....\n\n");
-				pwmEscWrite(1, eepromConfig.minThrottle);
+				pwmEscWrite(1, systemConfig.minThrottle);
 				break;
 
 			case '3':
 				cliPortPrint("Motor3 at Min Throttle....\n\n");
-				pwmEscWrite(2, eepromConfig.minThrottle);
+				pwmEscWrite(2, systemConfig.minThrottle);
 				break;
 
 			case '4':
 				cliPortPrint("Motor4 at Min Throttle....\n\n");
-				pwmEscWrite(3, eepromConfig.minThrottle);
+				pwmEscWrite(3, systemConfig.minThrottle);
 				break;
 
 			case '5':
 				cliPortPrint("Motor5 at Min Throttle....\n\n");
-				pwmEscWrite(4, eepromConfig.minThrottle);
+				pwmEscWrite(4, systemConfig.minThrottle);
 				break;
 
 			case '6':
 				cliPortPrint("Motor6 at Min Throttle....\n\n");
-				pwmEscWrite(5, eepromConfig.minThrottle);
+				pwmEscWrite(5, systemConfig.minThrottle);
 				break;
 
 			case '?':

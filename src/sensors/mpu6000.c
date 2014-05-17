@@ -184,7 +184,7 @@ void initMPU6000(void)
 
     ENABLE_MPU6000;
     spiTransfer(MPU6000_SPI, MPU6000_CONFIG);              // Accel and Gyro DLPF Setting
-    spiTransfer(MPU6000_SPI, eepromConfig.dlpfSetting);
+    spiTransfer(MPU6000_SPI, sensorConfig.dlpfSetting);
     DISABLE_MPU6000;
 
     delayMicroseconds(1);
@@ -259,9 +259,9 @@ void computeMPU6000RTData(void)
 
         computeMPU6000TCBias();
 
-        accelSum[XAXIS] += ((float)rawAccel[XAXIS].value - eepromConfig.accelBiasMPU[XAXIS] - accelTCBias[XAXIS]) * eepromConfig.accelScaleFactorMPU[XAXIS];
-        accelSum[YAXIS] += ((float)rawAccel[YAXIS].value - eepromConfig.accelBiasMPU[YAXIS] - accelTCBias[YAXIS]) * eepromConfig.accelScaleFactorMPU[YAXIS];
-        accelSum[ZAXIS] += ((float)rawAccel[ZAXIS].value - eepromConfig.accelBiasMPU[ZAXIS] - accelTCBias[ZAXIS]) * eepromConfig.accelScaleFactorMPU[ZAXIS];
+        accelSum[XAXIS] += ((float)rawAccel[XAXIS].value - sensorConfig.accelBiasMPU[XAXIS] - accelTCBias[XAXIS]) * sensorConfig.accelScaleFactorMPU[XAXIS];
+        accelSum[YAXIS] += ((float)rawAccel[YAXIS].value - sensorConfig.accelBiasMPU[YAXIS] - accelTCBias[YAXIS]) * sensorConfig.accelScaleFactorMPU[YAXIS];
+        accelSum[ZAXIS] += ((float)rawAccel[ZAXIS].value - sensorConfig.accelBiasMPU[ZAXIS] - accelTCBias[ZAXIS]) * sensorConfig.accelScaleFactorMPU[ZAXIS];
 
         gyroSum[ROLL ]  += (float)rawGyro[ROLL ].value  - gyroTCBias[ROLL ];
         gyroSum[PITCH]  += (float)rawGyro[PITCH].value  - gyroTCBias[PITCH];
@@ -289,13 +289,13 @@ void computeMPU6000TCBias(void)
 {
     mpu6000Temperature = (float) (rawMPU6000Temperature.value) / 340.0f + 35.0f;
 
-    accelTCBias[XAXIS] = eepromConfig.accelTCBiasSlope[XAXIS] * mpu6000Temperature + eepromConfig.accelTCBiasIntercept[XAXIS];
-    accelTCBias[YAXIS] = eepromConfig.accelTCBiasSlope[YAXIS] * mpu6000Temperature + eepromConfig.accelTCBiasIntercept[YAXIS];
-    accelTCBias[ZAXIS] = eepromConfig.accelTCBiasSlope[ZAXIS] * mpu6000Temperature + eepromConfig.accelTCBiasIntercept[ZAXIS];
+    accelTCBias[XAXIS] = sensorConfig.accelTCBiasSlope[XAXIS] * mpu6000Temperature + sensorConfig.accelTCBiasIntercept[XAXIS];
+    accelTCBias[YAXIS] = sensorConfig.accelTCBiasSlope[YAXIS] * mpu6000Temperature + sensorConfig.accelTCBiasIntercept[YAXIS];
+    accelTCBias[ZAXIS] = sensorConfig.accelTCBiasSlope[ZAXIS] * mpu6000Temperature + sensorConfig.accelTCBiasIntercept[ZAXIS];
 
-    gyroTCBias[ROLL ]  = eepromConfig.gyroTCBiasSlope[ROLL ]  * mpu6000Temperature + eepromConfig.gyroTCBiasIntercept[ROLL ];
-    gyroTCBias[PITCH]  = eepromConfig.gyroTCBiasSlope[PITCH]  * mpu6000Temperature + eepromConfig.gyroTCBiasIntercept[PITCH];
-    gyroTCBias[YAW  ]  = eepromConfig.gyroTCBiasSlope[YAW  ]  * mpu6000Temperature + eepromConfig.gyroTCBiasIntercept[YAW  ];
+    gyroTCBias[ROLL ]  = sensorConfig.gyroTCBiasSlope[ROLL ]  * mpu6000Temperature + sensorConfig.gyroTCBiasIntercept[ROLL ];
+    gyroTCBias[PITCH]  = sensorConfig.gyroTCBiasSlope[PITCH]  * mpu6000Temperature + sensorConfig.gyroTCBiasIntercept[PITCH];
+    gyroTCBias[YAW  ]  = sensorConfig.gyroTCBiasSlope[YAW  ]  * mpu6000Temperature + sensorConfig.gyroTCBiasIntercept[YAW  ];
 }
 
 ///////////////////////////////////////////////////////////////////////////////

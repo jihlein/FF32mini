@@ -230,13 +230,13 @@ void initFirstOrderFilter()
 
     ///////////////////////////////////
 
-    a = 2.0f * eepromConfig.triCopterYawCmd500HzLowPassTau * 500.0f;
+    a = 2.0f * systemConfig.triCopterYawCmd500HzLowPassTau * 500.0f;
 
     firstOrderFilters[TRICOPTER_YAW_LOWPASS].gx1 = 1.0f / (1.0f + a);
 	firstOrderFilters[TRICOPTER_YAW_LOWPASS].gx2 = 1.0f / (1.0f + a);
 	firstOrderFilters[TRICOPTER_YAW_LOWPASS].gx3 = (1.0f - a) / (1.0f + a);
-	firstOrderFilters[TRICOPTER_YAW_LOWPASS].previousInput  = eepromConfig.triYawServoMid;
-    firstOrderFilters[TRICOPTER_YAW_LOWPASS].previousOutput = eepromConfig.triYawServoMid;
+	firstOrderFilters[TRICOPTER_YAW_LOWPASS].previousInput  = systemConfig.triYawServoMid;
+    firstOrderFilters[TRICOPTER_YAW_LOWPASS].previousOutput = systemConfig.triYawServoMid;
 
 }
 

@@ -55,11 +55,17 @@
 // EEPROM Variables
 ///////////////////////////////////////////////////////////////////////////////
 
+extern const char rcChannelLetters[8];
+
+void parseRcChannels(const char *input);
+
+///////////////////////////////////////////////////////////////////////////////
+
 enum crcFlags { CRC_HistoryBad = 1 };
 
 ///////////////////////////////////////
 
-typedef struct sensorEEPROM_t
+typedef struct sensorConfig_t
 {
     uint8_t version;
 
@@ -92,29 +98,33 @@ typedef struct sensorEEPROM_t
 
     ///////////////////////////////////
 
+    uint8_t batteryCells;
+    float   voltageMonitorScale;
+    float   voltageMonitorBias;
+
+    float   batteryLow;
+    float   batteryVeryLow;
+    float   batteryMaxLow;
+
+    ///////////////////////////////////
+
+    uint8_t gpsVelocityHoldOnly;
+    uint8_t verticalVelocityHoldOnly;
+
+    ///////////////////////////////////
+
     uint8_t  CRCFlags;
     uint32_t CRCAtEnd[1];
 
-} sensorEEPROM_t;
+} sensorConfig_t;
 
 ////////////////////////////////////////
 
-#define NUMBER_OF_SENSOR_BYTES  (sizeof(sensorEEPROM_t))
-
-#define NUMBER_OF_SENSOR_PAGES  ((NUMBER_OF_SENSOR_BYTES / 256) + 1)
-
-typedef union sensorEEPROM_u
-{
-	sensorEEPROM_t value;
-	uint8_t        bytes[NUMBER_OF_SENSOR_BYTES];
-
-} sensorEEPROM_u;
-
-extern sensorEEPROM_u sensorEEPROM;
+extern sensorConfig_t sensorConfig;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef struct systemEEPROM_t
+typedef struct systemConfig_t
 {
 	uint8_t version;
 
@@ -166,16 +176,6 @@ typedef struct systemEEPROM_t
 
     ///////////////////////////////////
 
-    uint8_t batteryCells;
-    float   voltageMonitorScale;
-    float   voltageMonitorBias;
-
-    float   batteryLow;
-    float   batteryVeryLow;
-    float   batteryMaxLow;
-
-    ///////////////////////////////////
-
     uint8_t armCount;
     uint8_t disarmCount;
 
@@ -187,29 +187,14 @@ typedef struct systemEEPROM_t
 
     ///////////////////////////////////
 
-    uint8_t verticalVelocityHoldOnly;
-
-    ///////////////////////////////////
-
     uint8_t  CRCFlags;
     uint32_t CRCAtEnd[1];
 
-} systemEEPROM_t;
+} systemConfig_t;
 
 ////////////////////////////////////////
 
-#define NUMBER_OF_SYSTEM_BYTES  (sizeof(systemEEPROM_t))
-
-#define NUMBER_OF_SYSTEM_PAGES  ((NUMBER_OF_SYSTEM_BYTES / 256) + 1)
-
-typedef union systemEEPROM_u
-{
-	systemEEPROM_t value;
-	uint8_t        bytes[NUMBER_OF_SYSTEM_BYTES];
-
-} systemEEPROM_u;
-
-extern systemEEPROM_u systemEEPROM;
+extern systemConfig_t systemConfig;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Read Sensor EEPROM

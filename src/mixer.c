@@ -53,11 +53,11 @@ float servo[4] = { 3000.0f, 3000.0f, 3000.0f, 3000.0f, };
 
 void initMixer(void)
 {
-    switch (eepromConfig.mixerConfiguration)
+    switch (systemConfig.mixerConfiguration)
     {
         case MIXERTYPE_TRI:
             numberMotor = 3;
-            motor[5] = eepromConfig.triYawServoMid;
+            motor[5] = systemConfig.triYawServoMid;
             break;
 
         case MIXERTYPE_QUADX:
@@ -69,7 +69,7 @@ void initMixer(void)
             break;
 
         case MIXERTYPE_FREE:
-		    numberMotor = eepromConfig.freeMixMotors;
+		    numberMotor = systemConfig.freeMixMotors;
         	break;
     }
 }
@@ -97,7 +97,7 @@ void writeMotors(void)
     for (i = 0; i < numberMotor; i++)
         pwmEscWrite(i, (uint16_t)motor[i]);
 
-    if (eepromConfig.mixerConfiguration == MIXERTYPE_TRI)
+    if (systemConfig.mixerConfiguration == MIXERTYPE_TRI)
         pwmEscWrite(5, (uint16_t)motor[5]);
 }
 
@@ -125,7 +125,7 @@ void pulseMotors(uint8_t quantity)
 
     for ( i = 0; i < quantity; i++ )
     {
-        writeAllMotors( eepromConfig.minThrottle );
+        writeAllMotors( systemConfig.minThrottle );
         delay(250);
         writeAllMotors( (float)MINCOMMAND );
         delay(250);
@@ -136,7 +136,7 @@ void pulseMotors(uint8_t quantity)
 // Mixer
 ///////////////////////////////////////////////////////////////////////////////
 
-#define PIDMIX(X,Y,Z) (throttleCmd + axisPID[ROLL] * (X) + axisPID[PITCH] * (Y) + eepromConfig.yawDirection * axisPID[YAW] * (Z))
+#define PIDMIX(X,Y,Z) (throttleCmd + axisPID[ROLL] * (X) + axisPID[PITCH] * (Y) + systemConfig.yawDirection * axisPID[YAW] * (Z))
 
 void mixTable(void)
 {
@@ -145,7 +145,7 @@ void mixTable(void)
 
     ///////////////////////////////////
 
-    switch ( eepromConfig.mixerConfiguration )
+    switch ( systemConfig.mixerConfiguration )
     {
         ///////////////////////////////
 
@@ -154,11 +154,11 @@ void mixTable(void)
             motor[1] = PIDMIX( -1.0f, -0.666667f, 0.0f );  // Right CCW
             motor[2] = PIDMIX(  0.0f,  1.333333f, 0.0f );  // Rear  CW or CCW
 
-            motor[5] = eepromConfig.triYawServoMid + eepromConfig.yawDirection * axisPID[YAW];
+            motor[5] = systemConfig.triYawServoMid + systemConfig.yawDirection * axisPID[YAW];
 
             motor[5] = firstOrderFilter(motor[5], &firstOrderFilters[TRICOPTER_YAW_LOWPASS]);
 
-            motor[5] = constrain(motor[5], eepromConfig.triYawServoMin, eepromConfig.triYawServoMax );
+            motor[5] = constrain(motor[5], systemConfig.triYawServoMin, systemConfig.triYawServoMax );
 
             break;
 
@@ -186,7 +186,7 @@ void mixTable(void)
 
 		case MIXERTYPE_FREE:
 		    for ( i = 0; i < numberMotor; i++ )
-		        motor[i] = PIDMIX ( eepromConfig.freeMix[i][ROLL], eepromConfig.freeMix[i][PITCH], eepromConfig.freeMix[i][YAW] );
+		        motor[i] = PIDMIX ( systemConfig.freeMix[i][ROLL], systemConfig.freeMix[i][PITCH], systemConfig.freeMix[i][YAW] );
 
         	break;
 
@@ -205,13 +205,13 @@ void mixTable(void)
 
     for (i = 0; i < numberMotor; i++)
     {
-        if (maxMotor > eepromConfig.maxThrottle)
-            motor[i] -= maxMotor - eepromConfig.maxThrottle;
+        if (maxMotor > systemConfig.maxThrottle)
+            motor[i] -= maxMotor - systemConfig.maxThrottle;
 
-        motor[i] = constrain(motor[i], eepromConfig.minThrottle, eepromConfig.maxThrottle);
+        motor[i] = constrain(motor[i], systemConfig.minThrottle, systemConfig.maxThrottle);
 
-        if ((rxCommand[THROTTLE] < eepromConfig.minCheck) && (verticalModeState == ALT_DISENGAGED_THROTTLE_ACTIVE))
-            motor[i] = eepromConfig.minThrottle;
+        if ((rxCommand[THROTTLE] < systemConfig.minCheck) && (verticalModeState == ALT_DISENGAGED_THROTTLE_ACTIVE))
+            motor[i] = systemConfig.minThrottle;
 
         if ( armed == false )
             motor[i] = (float)MINCOMMAND;
