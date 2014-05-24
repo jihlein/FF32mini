@@ -166,7 +166,7 @@ void spiInit(SPI_TypeDef *SPIx)
 
 uint32_t spiTimeoutUserCallback(SPI_TypeDef *SPIx)
 {
-	return spi2ErrorCount;
+	return ++spi2ErrorCount;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
