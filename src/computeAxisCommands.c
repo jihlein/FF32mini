@@ -61,6 +61,8 @@ float   verticalVelocityCmd;
 
 void computeAxisCommands(float dt)
 {
+    float tempAttCompensation;
+
     if (flightMode == ATTITUDE)
     {
         attCmd[ROLL ] = rxCommand[ROLL ] * systemConfig.attitudeScaling;
@@ -117,6 +119,24 @@ void computeAxisCommands(float dt)
         }
 
     	throttleCmd = throttleReference + updatePID( verticalVelocityCmd, hDotEstimate, dt, holdIntegrators, &systemConfig.PID[HDOT_PID] );
+
+	    // Get Roll Angle, Constrain to +/-20 degrees (default)
+	    tempAttCompensation = constrain(sensors.attitude500Hz[ROLL ], systemConfig.rollAttAltCompensationLimit,  -systemConfig.rollAttAltCompensationLimit);
+
+	    // Compute Cosine of Roll Angle and Multiply by Att-Alt Gain
+	    tempAttCompensation = systemConfig.rollAttAltCompensationGain / cosf(tempAttCompensation);
+
+	    // Apply Roll Att Compensation to Throttle Command
+	    throttleCmd *= tempAttCompensation;
+
+	    // Get Pitch Angle, Constrain to +/-20 degrees (default)
+	    tempAttCompensation = constrain(sensors.attitude500Hz[PITCH], systemConfig.pitchAttAltCompensationLimit,  -systemConfig.pitchAttAltCompensationLimit);
+
+	    // Compute Cosine of Pitch Angle and Multiply by Att-Alt Gain
+	    tempAttCompensation = systemConfig.pitchAttAltCompensationGain / cosf(tempAttCompensation);
+
+	    // Apply Pitch Att Compensation to Throttle Command
+	    throttleCmd *= tempAttCompensation;
 	}
 }
 

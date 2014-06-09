@@ -101,20 +101,20 @@ void sensorCLI()
                 switch(sensorConfig.dlpfSetting)
                 {
                     case DLPF_256HZ:
-                        cliPortPrint("256 Hz\n");
+                        cliPortPrint("256 Hz\n\n");
                         break;
                     case DLPF_188HZ:
-                        cliPortPrint("188 Hz\n");
+                        cliPortPrint("188 Hz\n\n");
                         break;
                     case DLPF_98HZ:
-                        cliPortPrint("98 Hz\n");
+                        cliPortPrint("98 Hz\n\n");
                         break;
                     case DLPF_42HZ:
-                        cliPortPrint("42 Hz\n");
+                        cliPortPrint("42 Hz\n\n");
                         break;
                 }
 
-                cliPortPrintF("Voltage Monitor Scale:     %9.4f\n\n",  sensorConfig.voltageMonitorScale);
+                cliPortPrintF("Voltage Monitor Scale:     %9.4f\n",    sensorConfig.voltageMonitorScale);
                 cliPortPrintF("Voltage Monitor Bias:      %9.4f\n",    sensorConfig.voltageMonitorBias);
                 cliPortPrintF("Number of Battery Cells:      %1d\n\n", sensorConfig.batteryCells);
 

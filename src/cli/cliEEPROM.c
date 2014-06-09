@@ -559,7 +559,7 @@ void eepromCLI()
                 cliPortPrintF("'b' Write Sensor Config -> Console        'B' Write System Config - > Console\n");
                 cliPortPrintF("'c' Read Sensor Config -> RAM             'C' Read System Config -> RAM\n");
                 cliPortPrintF("'d' Read Console -> Sensor RAM            'D' Read Console -> System RAM\n");
-                cliPortPrintF("'h' Clear System CRC Bad History flag     'H' Clear System CRC Bad History flag\n");
+                cliPortPrintF("'h' Clear Sensor CRC Bad History flag     'H' Clear System CRC Bad History flag\n");
                 cliPortPrintF("'v' Reset Sensor Config to Default        'V' Reset System Config to Default\n");
                 cliPortPrintF("'w' Write Sensor Config -> EEPROM         'W' Write System Config -> EEPROM\n");
                 cliPortPrintF("'x' Exit EEPROM CLI                       '?' Command Summary\n");

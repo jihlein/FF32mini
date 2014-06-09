@@ -482,55 +482,63 @@ void cliCom(void)
 
             ///////////////////////////////
 
-            case 'r':
-            	if (flightMode == RATE)
-            		cliPortPrint("Flight Mode = RATE      ");
-            	else if (flightMode == ATTITUDE)
-            		cliPortPrint("Flight Mode = ATTITUDE  ");
-            	else if (flightMode == GPS)
-            		cliPortPrint("Flight Mode = GPS       ");
+			case 'r':
+				if (flightMode == RATE)
+					cliPortPrint("Flight Mode:RATE      ");
+				else if (flightMode == ATTITUDE)
+					cliPortPrint("Flight Mode:ATTITUDE  ");
+				else if (flightMode == GPS)
+					cliPortPrint("Flight Mode:GPS       ");
 
-            	if (headingHoldEngaged == true)
-            	    cliPortPrint("Heading Hold = ENGAGED     ");
-            	else
-            	    cliPortPrint("Heading Hold = DISENGAGED  ");
+				if (headingHoldEngaged == true)
+					cliPortPrint("Heading Hold:ENGAGED     ");
+				else
+					cliPortPrint("Heading Hold:DISENGAGED  ");
 
-            	cliPortPrint("Alt Hold = ");
+				switch (verticalModeState)
+				{
+					case ALT_DISENGAGED_THROTTLE_ACTIVE:
+						cliPortPrint("Alt:Disenaged Throttle Active      ");
 
-                switch (verticalModeState)
-            	{
-            		case ALT_DISENGAGED_THROTTLE_ACTIVE:
-		                cliPortPrint("Alt Disenaged Throttle Active\n");
+						break;
 
-            		    break;
+					case ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT:
+						cliPortPrint("Alt:Hold Fixed at Engagement Alt   ");
 
-            		case ALT_HOLD_FIXED_AT_ENGAGEMENT_ALT:
-		                cliPortPrint("Alt Hold Fixed at Engagement Alt\n");
+						break;
 
-            		    break;
+					case ALT_HOLD_AT_REFERENCE_ALTITUDE:
+						cliPortPrint("Alt:Hold at Reference Alt          ");
 
-            		case ALT_HOLD_AT_REFERENCE_ALTITUDE:
-		                cliPortPrint("Alt Hold at Reference Alt\n");
+						break;
 
-            		    break;
+					case VERTICAL_VELOCITY_HOLD_AT_REFERENCE_VELOCITY:
+						cliPortPrint("Alt:Velocity Hold at Reference Vel ");
 
-            		case VERTICAL_VELOCITY_HOLD_AT_REFERENCE_VELOCITY:
-		                cliPortPrint("V Velocity Hold at Reference Vel\n");
+						break;
 
-            		    break;
+					case ALT_DISENGAGED_THROTTLE_INACTIVE:
+						cliPortPrint("Alt:Disengaged Throttle Inactive   ");
 
-            		case ALT_DISENGAGED_THROTTLE_INACTIVE:
-            		    cliPortPrint("Alt Disengaged Throttle Inactive\n");
+						break;
+				}
 
-            		    break;
-                }
+				if (rxCommand[AUX3] > MIDCOMMAND)
+					cliPortPrint("Mode:Simple  ");
+				else
+					cliPortPrint("Mode:Normal  ");
 
-            	validCliCommand = false;
-            	break;
+				if (rxCommand[AUX4] > MIDCOMMAND)
+					cliPortPrint("Emergency Bail:Active\n");
+				else
+					cliPortPrint("Emergency Bail:Inactive\n");
 
-            ///////////////////////////////
+				validCliCommand = false;
+				break;
 
-            case 's': // Raw Receiver Commands
+			///////////////////////////////
+
+			case 's': // Raw Receiver Commands
                 if ((systemConfig.receiverType == SPEKTRUM) && (maxChannelNum > 0))
                 {
 		    		for (index = 0; index < maxChannelNum - 1; index++)
@@ -820,7 +828,12 @@ void cliCom(void)
 
             case 'V': // Write Sensor EEPROM Parameters
                 cliPortPrint("\nWriting Sensor EEPROM Parameters....\n\n");
+
+                cliBusy = true;
+
                 writeSensorEEPROM();
+
+                cliBusy = false;
 
                 cliQuery = 'x';
              	validCliCommand = false;
@@ -830,7 +843,12 @@ void cliCom(void)
 
             case 'W': // Write System EEPROM Parameters
                 cliPortPrint("\nWriting System EEPROM Parameters....\n\n");
+
+                cliBusy = true;
+
                 writeSystemEEPROM();
+
+                cliBusy = false;
 
                 cliQuery = 'x';
              	validCliCommand = false;

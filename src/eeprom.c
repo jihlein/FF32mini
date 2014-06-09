@@ -66,7 +66,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 static uint8_t sensorVersion = 1;
-static uint8_t systemVersion = 1;
+static uint8_t systemVersion = 2;
 
 sensorConfig_t sensorConfig;
 systemConfig_t systemConfig;
@@ -608,6 +608,14 @@ void checkSystemEEPROM(bool eepromReset)
 		systemConfig.freeMix[5][ROLL ]    =  0.0f;
 		systemConfig.freeMix[5][PITCH]    =  0.0f;
         systemConfig.freeMix[5][YAW  ]    =  0.0f;
+
+        ///////////////////////////////
+
+        systemConfig.rollAttAltCompensationGain   =  0.0f;
+        systemConfig.rollAttAltCompensationLimit  = 20.0f * D2R;
+
+        systemConfig.pitchAttAltCompensationGain  =  0.0f;
+        systemConfig.pitchAttAltCompensationLimit = 20.0f * D2R;
 
         ///////////////////////////////////
 
