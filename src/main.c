@@ -231,13 +231,17 @@ int main(void)
 
 			dt100Hz = (float)timerValue * 0.0000005f;  // For integrations in 100 Hz loop
 
-            sensors.accel100Hz[XAXIS] = -((float)accelSummedSamples100Hz[XAXIS] * 0.1f - accelTCBias[XAXIS]) * ACCEL_SCALE_FACTOR;
-            sensors.accel100Hz[YAXIS] =  ((float)accelSummedSamples100Hz[YAXIS] * 0.1f - accelTCBias[YAXIS]) * ACCEL_SCALE_FACTOR;
-            sensors.accel100Hz[ZAXIS] = -((float)accelSummedSamples100Hz[ZAXIS] * 0.1f - accelTCBias[ZAXIS]) * ACCEL_SCALE_FACTOR;
+       	    nonRotatedAccelData[XAXIS] = ((float)accelSummedSamples100Hz[XAXIS] * 0.1f - accelTCBias[XAXIS]) * ACCEL_SCALE_FACTOR;
+       	    nonRotatedAccelData[YAXIS] = ((float)accelSummedSamples100Hz[YAXIS] * 0.1f - accelTCBias[YAXIS]) * ACCEL_SCALE_FACTOR;
+       	    nonRotatedAccelData[ZAXIS] = ((float)accelSummedSamples100Hz[ZAXIS] * 0.1f - accelTCBias[ZAXIS]) * ACCEL_SCALE_FACTOR;
 
-			//sensors.accel100Hz[XAXIS] = firstOrderFilter(sensors.accel100Hz[XAXIS], &firstOrderFilters[ACCEL100HZ_X_LOWPASS]);
-			//sensors.accel100Hz[YAXIS] = firstOrderFilter(sensors.accel100Hz[YAXIS], &firstOrderFilters[ACCEL100HZ_Y_LOWPASS]);
-			//sensors.accel100Hz[ZAXIS] = firstOrderFilter(sensors.accel100Hz[ZAXIS], &firstOrderFilters[ACCEL100HZ_Z_LOWPASS]);
+		    arm_mat_init_f32(&a, 3, 3, (float *)mpuOrientationMatrix);
+
+		    arm_mat_init_f32(&b, 3, 1, (float *)nonRotatedAccelData);
+
+		    arm_mat_init_f32(&x, 3, 1,          sensors.accel100Hz);
+
+		    arm_mat_mult_f32(&a, &b, &x);
 
 			createRotationMatrix();
             bodyAccelToEarthAccel();
