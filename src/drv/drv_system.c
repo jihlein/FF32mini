@@ -415,6 +415,8 @@ void systemInit(void)
 
     LED0_ON;
 
+    orientSensors();
+
     initMPU6000();
     initMag();
     initPressure();

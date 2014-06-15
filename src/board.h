@@ -87,8 +87,9 @@
 #include "hmc5983.h"
 #include "mpu6000.h"
 #include "ms5611_SPI.h"
+#include "orientation.h"
+#include "ublox.h"
 
-#include "accelCalibrationMPU.h"
 #include "batMon.h"
 #include "cli.h"
 #include "computeAxisCommands.h"

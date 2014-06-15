@@ -115,6 +115,8 @@ float accelTCBias[3] = { 0.0f, 0.0f, 0.0f };
 
 int16andUint8_t rawAccel[3];
 
+float nonRotatedAccelData[3];
+
 ///////////////////////////////////////
 
 float gyroRTBias[3];
@@ -126,6 +128,8 @@ int32_t gyroSummedSamples500Hz[3];
 float gyroTCBias[3];
 
 int16andUint8_t rawGyro[3];
+
+float nonRotatedGyroData[3];
 
 ///////////////////////////////////////
 
@@ -259,13 +263,13 @@ void computeMPU6000RTData(void)
 
         computeMPU6000TCBias();
 
-        accelSum[XAXIS] += ((float)rawAccel[XAXIS].value - sensorConfig.accelBiasMPU[XAXIS] - accelTCBias[XAXIS]) * sensorConfig.accelScaleFactorMPU[XAXIS];
-        accelSum[YAXIS] += ((float)rawAccel[YAXIS].value - sensorConfig.accelBiasMPU[YAXIS] - accelTCBias[YAXIS]) * sensorConfig.accelScaleFactorMPU[YAXIS];
-        accelSum[ZAXIS] += ((float)rawAccel[ZAXIS].value - sensorConfig.accelBiasMPU[ZAXIS] - accelTCBias[ZAXIS]) * sensorConfig.accelScaleFactorMPU[ZAXIS];
+        accelSum[XAXIS] += ((float)rawAccel[XAXIS].value - accelTCBias[XAXIS]) * ACCEL_SCALE_FACTOR;
+        accelSum[YAXIS] += ((float)rawAccel[YAXIS].value - accelTCBias[YAXIS]) * ACCEL_SCALE_FACTOR;
+        accelSum[ZAXIS] += ((float)rawAccel[ZAXIS].value - accelTCBias[ZAXIS]) * ACCEL_SCALE_FACTOR;
 
-        gyroSum[ROLL ]  += (float)rawGyro[ROLL ].value  - gyroTCBias[ROLL ];
-        gyroSum[PITCH]  += (float)rawGyro[PITCH].value  - gyroTCBias[PITCH];
-        gyroSum[YAW  ]  += (float)rawGyro[YAW  ].value  - gyroTCBias[YAW  ];
+        gyroSum[ROLL ]  += (float)rawGyro[ROLL ].value - gyroTCBias[ROLL ];
+        gyroSum[PITCH]  += (float)rawGyro[PITCH].value - gyroTCBias[PITCH];
+        gyroSum[YAW  ]  += (float)rawGyro[YAW  ].value - gyroTCBias[YAW  ];
 
         delayMicroseconds(1000);
     }

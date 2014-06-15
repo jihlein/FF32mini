@@ -69,9 +69,6 @@ typedef struct sensorConfig_t
 {
     uint8_t version;
 
-    float accelBiasMPU[3];          // Bias for MPU60x0 Accel
-    float accelScaleFactorMPU[3];   // Scale factor for MPU60x0 Accel
-
     float accelTCBiasSlope[3];
     float accelTCBiasIntercept[3];
 
@@ -95,6 +92,10 @@ typedef struct sensorConfig_t
     float compFilterB;
 
     uint8_t dlpfSetting;
+
+    ///////////////////////////////////
+
+    uint8_t sensorOrientation;
 
     ///////////////////////////////////
 

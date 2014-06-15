@@ -86,6 +86,8 @@ uint8_t newMagData = false;
 
 int16andUint8_t rawMag[3];
 
+float nonRotatedMagData[3];
+
 ///////////////////////////////////////////////////////////////////////////////
 // Read Magnetometer
 ///////////////////////////////////////////////////////////////////////////////
@@ -102,6 +104,7 @@ uint8_t readMag()
     rawMag[ZAXIS].bytes[0] = spiTransfer(HMC5983_SPI, 0x00);
     rawMag[YAXIS].bytes[1] = spiTransfer(HMC5983_SPI, 0x00);
     rawMag[YAXIS].bytes[0] = spiTransfer(HMC5983_SPI, 0x00);
+
     DISABLE_HMC5983;
 
     // check for valid data
@@ -134,7 +137,7 @@ void initMag()
     spiTransfer(HMC5983_SPI, SENSOR_GAIN);
     DISABLE_HMC5983;
 
-    delay(20);
+    delay(50);
 
     magScaleFactor[XAXIS] = 0.0f;
     magScaleFactor[YAXIS] = 0.0f;
@@ -147,22 +150,29 @@ void initMag()
         spiTransfer(HMC5983_SPI, OP_MODE_SINGLE);
         DISABLE_HMC5983;
 
-        delay(20);
+        delay(50);
 
-        while ((hmc5983Status && STATUS_RDY) == 0x00)
+        do
         {
+			delay(1);
             ENABLE_HMC5983;
             spiTransfer(HMC5983_SPI, HMC5983_STATUS_REG + 0x80);
             hmc5983Status = spiTransfer(HMC5983_SPI, 0x00);
             DISABLE_HMC5983;
-       }
+        }
+        while ((hmc5983Status && STATUS_RDY) == 0x00);
 
-        readMag();
-
-        magScaleFactor[XAXIS] += (1.16f * 1090.0f) / (float)rawMag[XAXIS].value;
-        magScaleFactor[YAXIS] += (1.16f * 1090.0f) / (float)rawMag[YAXIS].value;
-        magScaleFactor[ZAXIS] += (1.08f * 1090.0f) / (float)rawMag[ZAXIS].value;
-    }
+        if (readMag())
+        {
+            magScaleFactor[XAXIS] += (1.16f * 1090.0f) / (float)rawMag[XAXIS].value;
+            magScaleFactor[YAXIS] += (1.16f * 1090.0f) / (float)rawMag[YAXIS].value;
+            magScaleFactor[ZAXIS] += (1.08f * 1090.0f) / (float)rawMag[ZAXIS].value;
+        }
+        else
+        {
+			i--;
+		}
+	}
 
     magScaleFactor[XAXIS] = fabs(magScaleFactor[XAXIS] / 10.0f);
     magScaleFactor[YAXIS] = fabs(magScaleFactor[YAXIS] / 10.0f);
@@ -180,11 +190,11 @@ void initMag()
     spiTransfer(HMC5983_SPI, OP_MODE_CONTINUOUS);
     DISABLE_HMC5983;
 
-    delay(20);
+    delay(50);
 
     readMag();
 
-    delay(20);
+    delay(50);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

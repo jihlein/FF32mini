@@ -65,7 +65,7 @@
 // EEPROM Variables
 ///////////////////////////////////////////////////////////////////////////////
 
-static uint8_t sensorVersion = 1;
+static uint8_t sensorVersion = 3;
 static uint8_t systemVersion = 2;
 
 sensorConfig_t sensorConfig;
@@ -292,18 +292,6 @@ void checkSensorEEPROM(bool eepromReset)
 
 	    ///////////////////////////////
 
-        sensorConfig.accelBiasMPU[XAXIS] = 0.0f;
-        sensorConfig.accelBiasMPU[YAXIS] = 0.0f;
-        sensorConfig.accelBiasMPU[ZAXIS] = 0.0f;
-
-        ///////////////////////////////
-
-        sensorConfig.accelScaleFactorMPU[XAXIS] = 0.00119708f;  // (1/8192) * 9.8065  (8192 LSB = 1 G)
-        sensorConfig.accelScaleFactorMPU[YAXIS] = 0.00119708f;  // (1/8192) * 9.8065  (8192 LSB = 1 G)
-        sensorConfig.accelScaleFactorMPU[ZAXIS] = 0.00119708f;  // (1/8192) * 9.8065  (8192 LSB = 1 G)
-
-	    ///////////////////////////////
-
         sensorConfig.accelTCBiasSlope[XAXIS] = 0.0f;
         sensorConfig.accelTCBiasSlope[YAXIS] = 0.0f;
         sensorConfig.accelTCBiasSlope[ZAXIS] = 0.0f;
@@ -353,6 +341,8 @@ void checkSensorEEPROM(bool eepromReset)
 	    sensorConfig.dlpfSetting = BITS_DLPF_CFG_98HZ;
 
 		///////////////////////////////////
+
+	    sensorConfig.sensorOrientation        = 1;
 
         sensorConfig.batteryCells             = 3;
 		sensorConfig.voltageMonitorScale      = 11.0f / 1.0f;

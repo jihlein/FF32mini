@@ -283,13 +283,13 @@ void eepromCLI()
                     cliPortPrintF("Invalid character found at position %d: '%c' (0x%02x)",
                         charsEncountered, c, c);
                 }
-                else if (crcCheckVal != crc32B((uint32_t*)(&sensorConfig),       // CRC32B[sensorConfig CRC32B[sensorConfig]]
-                                               (uint32_t*)(&sensorConfig + 1)))
-                {
-                    cliPortPrintF("CRC mismatch! Not writing to in-memory config.\n");
-                    cliPortPrintF("Here's what was received:\n\n");
-                    cliPrintSensorEEPROM();
-                }
+                // HJI else if (crcCheckVal != crc32B((uint32_t*)(&sensorConfig),       // CRC32B[sensorConfig CRC32B[sensorConfig]]
+                // HJI                                (uint32_t*)(&sensorConfig + 1)))
+                // HJI {
+                // HJI     cliPortPrintF("CRC mismatch! Not writing to in-memory config.\n");
+                // HJI     cliPortPrintF("Here's what was received:\n\n");
+                // HJI     cliPrintSensorEEPROM();
+                // HJI }
                 else
                 {
                     // check to see if the newly received sytem config
@@ -480,13 +480,13 @@ void eepromCLI()
                     cliPortPrintF("Invalid character found at position %d: '%c' (0x%02x)",
                         charsEncountered, c, c);
                 }
-                else if (crcCheckVal != crc32B((uint32_t*)(&systemConfig),       // CRC32B[systemConfig CRC32B[systemConfig]]
-                                               (uint32_t*)(&systemConfig + 1)))
-                {
-                    cliPortPrintF("CRC mismatch! Not writing to in-memory config.\n");
-                    cliPortPrintF("Here's what was received:\n\n");
-                    cliPrintSystemConfig();
-                }
+                // HJI else if (crcCheckVal != crc32B((uint32_t*)(&systemConfig),       // CRC32B[systemConfig CRC32B[systemConfig]]
+                // HJI                                (uint32_t*)(&systemConfig + 1)))
+                // HJI {
+                // HJI     cliPortPrintF("CRC mismatch! Not writing to in-memory config.\n");
+                // HJI     cliPortPrintF("Here's what was received:\n\n");
+                // HJI     cliPrintSystemConfig();
+                // HJI }
                 else
                 {
                     // check to see if the newly received sytem config

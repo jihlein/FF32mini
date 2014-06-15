@@ -64,6 +64,10 @@ int main(void)
 
 	uint32_t currentTime;
 
+	arm_matrix_instance_f32 a;
+	arm_matrix_instance_f32 b;
+	arm_matrix_instance_f32 x;
+
     systemReady = false;
 
     systemInit();
@@ -117,11 +121,19 @@ int main(void)
 
 			if (newMagData == true)
 			{
-				sensors.mag10Hz[XAXIS] =   (float)rawMag[XAXIS].value * magScaleFactor[XAXIS] - sensorConfig.magBias[XAXIS];
-			    sensors.mag10Hz[YAXIS] = -((float)rawMag[YAXIS].value * magScaleFactor[YAXIS] - sensorConfig.magBias[YAXIS]);
-			    sensors.mag10Hz[ZAXIS] = -((float)rawMag[ZAXIS].value * magScaleFactor[ZAXIS] - sensorConfig.magBias[ZAXIS]);
+			    nonRotatedMagData[XAXIS] = (rawMag[XAXIS].value * magScaleFactor[XAXIS]) - sensorConfig.magBias[XAXIS];
+			    nonRotatedMagData[YAXIS] = (rawMag[YAXIS].value * magScaleFactor[YAXIS]) - sensorConfig.magBias[YAXIS];
+			    nonRotatedMagData[ZAXIS] = (rawMag[ZAXIS].value * magScaleFactor[ZAXIS]) - sensorConfig.magBias[ZAXIS];
 
-			    newMagData = false;
+			    arm_mat_init_f32(&a, 3, 3, (float *)hmcOrientationMatrix);
+
+			    arm_mat_init_f32(&b, 3, 1, (float *)nonRotatedMagData);
+
+			    arm_mat_init_f32(&x, 3, 1,          sensors.mag10Hz);
+
+			    arm_mat_mult_f32(&a, &b, &x);
+
+				newMagData = false;
 			    magDataUpdate = true;
             }
 
@@ -161,19 +173,31 @@ int main(void)
 
        	    computeMPU6000TCBias();
 
-       	    sensors.accel500Hz[XAXIS] = -((float)accelSummedSamples500Hz[XAXIS] * 0.5f - sensorConfig.accelBiasMPU[XAXIS] - accelTCBias[XAXIS]) * sensorConfig.accelScaleFactorMPU[XAXIS];
-            sensors.accel500Hz[YAXIS] =  ((float)accelSummedSamples500Hz[YAXIS] * 0.5f - sensorConfig.accelBiasMPU[YAXIS] - accelTCBias[YAXIS]) * sensorConfig.accelScaleFactorMPU[YAXIS];
-            sensors.accel500Hz[ZAXIS] = -((float)accelSummedSamples500Hz[ZAXIS] * 0.5f - sensorConfig.accelBiasMPU[ZAXIS] - accelTCBias[ZAXIS]) * sensorConfig.accelScaleFactorMPU[ZAXIS];
+       	    nonRotatedAccelData[XAXIS] = ((float)accelSummedSamples500Hz[XAXIS] * 0.5f - accelTCBias[XAXIS]) * ACCEL_SCALE_FACTOR;
+       	    nonRotatedAccelData[YAXIS] = ((float)accelSummedSamples500Hz[YAXIS] * 0.5f - accelTCBias[YAXIS]) * ACCEL_SCALE_FACTOR;
+       	    nonRotatedAccelData[ZAXIS] = ((float)accelSummedSamples500Hz[ZAXIS] * 0.5f - accelTCBias[ZAXIS]) * ACCEL_SCALE_FACTOR;
 
-            //sensors.accel500Hz[XAXIS] = firstOrderFilter(sensors.accel500Hz[XAXIS], &firstOrderFilters[ACCEL500HZ_X_LOWPASS]);
-            //sensors.accel500Hz[YAXIS] = firstOrderFilter(sensors.accel500Hz[YAXIS], &firstOrderFilters[ACCEL500HZ_Y_LOWPASS]);
-            //sensors.accel500Hz[ZAXIS] = firstOrderFilter(sensors.accel500Hz[ZAXIS], &firstOrderFilters[ACCEL500HZ_Z_LOWPASS]);
+		    arm_mat_init_f32(&a, 3, 3, (float *)mpuOrientationMatrix);
 
-            sensors.gyro500Hz[ROLL ] = -((float)gyroSummedSamples500Hz[ROLL]  / 2.0f - gyroRTBias[ROLL ] - gyroTCBias[ROLL ]) * GYRO_SCALE_FACTOR;
-            sensors.gyro500Hz[PITCH] =  ((float)gyroSummedSamples500Hz[PITCH] / 2.0f - gyroRTBias[PITCH] - gyroTCBias[PITCH]) * GYRO_SCALE_FACTOR;
-            sensors.gyro500Hz[YAW  ] = -((float)gyroSummedSamples500Hz[YAW]   / 2.0f - gyroRTBias[YAW  ] - gyroTCBias[YAW  ]) * GYRO_SCALE_FACTOR;
+		    arm_mat_init_f32(&b, 3, 1, (float *)nonRotatedAccelData);
 
-            MargAHRSupdate( sensors.gyro500Hz[ROLL],   sensors.gyro500Hz[PITCH],  sensors.gyro500Hz[YAW],
+		    arm_mat_init_f32(&x, 3, 1,          sensors.accel500Hz);
+
+		    arm_mat_mult_f32(&a, &b, &x);
+
+            nonRotatedGyroData[ROLL ] = ((float)gyroSummedSamples500Hz[ROLL]  * 0.5f - gyroRTBias[ROLL ] - gyroTCBias[ROLL ]) * GYRO_SCALE_FACTOR;
+            nonRotatedGyroData[PITCH] = ((float)gyroSummedSamples500Hz[PITCH] * 0.5f - gyroRTBias[PITCH] - gyroTCBias[PITCH]) * GYRO_SCALE_FACTOR;
+            nonRotatedGyroData[YAW  ] = ((float)gyroSummedSamples500Hz[YAW]   * 0.5f - gyroRTBias[YAW  ] - gyroTCBias[YAW  ]) * GYRO_SCALE_FACTOR;
+
+		    arm_mat_init_f32(&a, 3, 3, (float *)mpuOrientationMatrix);
+
+		    arm_mat_init_f32(&b, 3, 1, (float *)nonRotatedGyroData);
+
+		    arm_mat_init_f32(&x, 3, 1,          sensors.gyro500Hz);
+
+		    arm_mat_mult_f32(&a, &b, &x);
+
+		    MargAHRSupdate( sensors.gyro500Hz[ROLL],   sensors.gyro500Hz[PITCH],  sensors.gyro500Hz[YAW],
                             sensors.accel500Hz[XAXIS], sensors.accel500Hz[YAXIS], sensors.accel500Hz[ZAXIS],
                             sensors.mag10Hz[XAXIS],    sensors.mag10Hz[YAXIS],    sensors.mag10Hz[ZAXIS],
                             sensorConfig.accelCutoff,
@@ -207,9 +231,9 @@ int main(void)
 
 			dt100Hz = (float)timerValue * 0.0000005f;  // For integrations in 100 Hz loop
 
-            sensors.accel100Hz[XAXIS] = -((float)accelSummedSamples100Hz[XAXIS] * 0.1f - sensorConfig.accelBiasMPU[XAXIS] - accelTCBias[XAXIS]) * sensorConfig.accelScaleFactorMPU[XAXIS];
-            sensors.accel100Hz[YAXIS] =  ((float)accelSummedSamples100Hz[YAXIS] * 0.1f - sensorConfig.accelBiasMPU[YAXIS] - accelTCBias[YAXIS]) * sensorConfig.accelScaleFactorMPU[YAXIS];
-            sensors.accel100Hz[ZAXIS] = -((float)accelSummedSamples100Hz[ZAXIS] * 0.1f - sensorConfig.accelBiasMPU[ZAXIS] - accelTCBias[ZAXIS]) * sensorConfig.accelScaleFactorMPU[ZAXIS];
+            sensors.accel100Hz[XAXIS] = -((float)accelSummedSamples100Hz[XAXIS] * 0.1f - accelTCBias[XAXIS]) * ACCEL_SCALE_FACTOR;
+            sensors.accel100Hz[YAXIS] =  ((float)accelSummedSamples100Hz[YAXIS] * 0.1f - accelTCBias[YAXIS]) * ACCEL_SCALE_FACTOR;
+            sensors.accel100Hz[ZAXIS] = -((float)accelSummedSamples100Hz[ZAXIS] * 0.1f - accelTCBias[ZAXIS]) * ACCEL_SCALE_FACTOR;
 
 			//sensors.accel100Hz[XAXIS] = firstOrderFilter(sensors.accel100Hz[XAXIS], &firstOrderFilters[ACCEL100HZ_X_LOWPASS]);
 			//sensors.accel100Hz[YAXIS] = firstOrderFilter(sensors.accel100Hz[YAXIS], &firstOrderFilters[ACCEL100HZ_Y_LOWPASS]);
@@ -282,7 +306,10 @@ int main(void)
 			deltaTime5Hz    = currentTime - previous5HzTime;
 			previous5HzTime = currentTime;
 
-			gpsUpdated();
+			if (gpsValid() == true)
+			{
+
+			}
 
             //if (systemConfig.mavlinkEnabled == true)
             //{

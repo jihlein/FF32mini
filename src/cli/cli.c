@@ -353,9 +353,10 @@ void cliCom(void)
             ///////////////////////////////
 
             case 'j': // 10 Hz Mag Data
-            	cliPortPrintF("%9.4f, %9.4f, %9.4f\n", sensors.mag10Hz[XAXIS],
-            			                               sensors.mag10Hz[YAXIS],
-            			                               sensors.mag10Hz[ZAXIS]);
+                cliPortPrintF("%9.4f, %9.4f, %9.4f\n", sensors.mag10Hz[XAXIS],
+                		                               sensors.mag10Hz[YAXIS],
+                		                               sensors.mag10Hz[ZAXIS]);
+
             	validCliCommand = false;
             	break;
 

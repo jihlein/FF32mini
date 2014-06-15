@@ -49,6 +49,16 @@ float constrain(float input, float minValue, float maxValue);
 
 void GPIO_ToggleBits(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
+////////////////////////////////////////////////////////////////////////////////
+//  Matrix Multiply
+//  Multiply matrix A times matrix B, matrix A dimension m x n, matrix B dimension n x p
+//  Result placed in matrix C, dimension m x p
+//
+//  Call as: matrixMultiply(m, n, p, C, A, B)
+////////////////////////////////////////////////////////////////////////////////
+
+void matrixMultiply(uint8_t aRows, uint8_t aCols_bRows, uint8_t bCols, int16_t matrixC[], int16_t matrixA[], int16_t matrixB[]);
+
 ///////////////////////////////////////////////////////////////////////////////
 // _sbrk
 ///////////////////////////////////////////////////////////////////////////////

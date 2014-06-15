@@ -56,6 +56,10 @@ void magCalibration()
 
 	magCalibrating = true;
 
+	sensorConfig.magBias[XAXIS] = 0.0f;
+	sensorConfig.magBias[YAXIS] = 0.0f;
+	sensorConfig.magBias[ZAXIS] = 0.0f;
+
 	cliPortPrint("\n\nMagnetometer Calibration:\n\n");
 
     cliPortPrint("Rotate magnetometer around all axes multiple times\n");
@@ -72,9 +76,9 @@ void magCalibration()
 	{
 		if (readMag() == true)
 		{
-			d[calibrationCounter][XAXIS] = (float)rawMag[XAXIS].value * magScaleFactor[XAXIS];
-			d[calibrationCounter][YAXIS] = (float)rawMag[YAXIS].value * magScaleFactor[YAXIS];
-			d[calibrationCounter][ZAXIS] = (float)rawMag[ZAXIS].value * magScaleFactor[ZAXIS];
+			d[calibrationCounter][XAXIS] = rawMag[XAXIS].value * magScaleFactor[XAXIS];
+			d[calibrationCounter][YAXIS] = rawMag[YAXIS].value * magScaleFactor[YAXIS];
+			d[calibrationCounter][ZAXIS] = rawMag[ZAXIS].value * magScaleFactor[ZAXIS];
 
 			calibrationCounter++;
 		}

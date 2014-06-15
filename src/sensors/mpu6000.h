@@ -60,6 +60,7 @@
 #define BITS_DLPF_CFG_42HZ          0x03
 
 #define GYRO_SCALE_FACTOR  0.00053292f  // (4/131) * pi/180   (32.75 LSB = 1 DPS)
+#define ACCEL_SCALE_FACTOR 0.00119708f  // (1/8192) * 9.8065  (8192 LSB = 1 G)
 
 ///////////////////////////////////////////////////////////////////////////////
 // MPU6000 Variables
@@ -79,6 +80,8 @@ extern int32_t accelSummedSamples500Hz[3];
 
 extern int16andUint8_t rawAccel[3];
 
+extern float nonRotatedAccelData[3];
+
 ///////////////////////////////////////
 
 extern float gyroRTBias[3];
@@ -90,6 +93,8 @@ extern int32_t gyroSum500Hz[3];
 extern int32_t gyroSummedSamples500Hz[3];
 
 extern int16andUint8_t rawGyro[3];
+
+extern float nonRotatedGyroData[3];
 
 ///////////////////////////////////////
 

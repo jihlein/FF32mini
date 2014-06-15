@@ -39,35 +39,13 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define HMC5983_SPI           SPI2
-
-#define HMC5983_CS_GPIO       GPIOC
-#define HMC5983_CS_PIN        GPIO_Pin_14
-
-#define DISABLE_HMC5983       GPIO_SetBits(HMC5983_CS_GPIO,   HMC5983_CS_PIN)
-#define ENABLE_HMC5983        GPIO_ResetBits(HMC5983_CS_GPIO, HMC5983_CS_PIN);
-
-#define MAG_INT_GPIO          GPIOB
-#define MAG_INT_PIN           GPIO_Pin_0
-
-///////////////////////////////////////
-
-extern float magScaleFactor[3];
-
-extern uint8_t magDataUpdate;
-
-extern uint8_t newMagData;
-
-extern int16andUint8_t rawMag[3];
-
-extern float nonRotatedMagData[3];
+extern float mpuOrientationMatrix[9];
+extern float hmcOrientationMatrix[9];
 
 ///////////////////////////////////////////////////////////////////////////////
-
-uint8_t readMag(void);
-
+// Orient Sensors
 ///////////////////////////////////////////////////////////////////////////////
 
-void initMag(void);
+void orientSensors(void);
 
 ///////////////////////////////////////////////////////////////////////////////
