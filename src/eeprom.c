@@ -601,11 +601,11 @@ void checkSystemEEPROM(bool eepromReset)
 
         ///////////////////////////////
 
-        systemConfig.rollAttAltCompensationGain   =  0.0f;
-        systemConfig.rollAttAltCompensationLimit  = 20.0f * D2R;
+        systemConfig.rollAttAltCompensationGain   =  1.0f;
+        systemConfig.rollAttAltCompensationLimit  =  0.0f * D2R;
 
-        systemConfig.pitchAttAltCompensationGain  =  0.0f;
-        systemConfig.pitchAttAltCompensationLimit = 20.0f * D2R;
+        systemConfig.pitchAttAltCompensationGain  =  1.0f;
+        systemConfig.pitchAttAltCompensationLimit =  0.0f * D2R;
 
         ///////////////////////////////////
 
