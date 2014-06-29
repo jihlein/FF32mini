@@ -37,9 +37,17 @@
 
 #include "board.h"
 
+#include "usb_istr.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define USB_TIMEOUT  50
+
+///////////////////////////////////////
+
+uint8_t previousCableDisconnected = false;
+
+uint8_t previousIntPackSOF = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -184,26 +192,40 @@ void usbPrintBinary(uint8_t *buf, uint16_t length)
 // Check USB Active
 ///////////////////////////////////////////////////////////////////////////////
 
-void checkUsbActive(void)
+void checkUsbActive(uint8_t forceCheck)
 {
-	if (usbIsConfigured())
-	{
-		cliPortAvailable       = &usbAvailable;
-		cliPortPrint           = &usbPrint;
-		cliPortPrintF          = &usbPrintF;
-		cliPortRead            = &usbRead;
+	uint8_t cableDisconnected;
 
-		mavlinkPortPrintBinary = &usbPrintBinary;
-	}
-	else
-	{
-		cliPortAvailable       = &uart1Available;
-		cliPortPrint           = &uart1Print;
-		cliPortPrintF          = &uart1PrintF;
-		cliPortRead            = &uart1Read;
+	cableDisconnected = (previousIntPackSOF == bIntPackSOF);
 
-		mavlinkPortPrintBinary = &uart1PrintBinary;
+	if ((cableDisconnected != previousCableDisconnected) || forceCheck)
+	{
+        if (cableDisconnected)
+	    {
+	        cliPortAvailable       = &uart1Available;
+	        cliPortClearBuffer     = &uart1ClearBuffer;
+            cliPortPrint           = &uart1Print;
+	        cliPortPrintF          = &uart1PrintF;
+	        cliPortRead            = &uart1Read;
+
+	        mavlinkPortPrintBinary = &uart1PrintBinary;
+
+	        cliPortClearBuffer();
+	    }
+	    else
+	    {
+		    cliPortAvailable       = &usbAvailable;
+		    cliPortPrint           = &usbPrint;
+		    cliPortPrintF          = &usbPrintF;
+		    cliPortRead            = &usbRead;
+
+		    mavlinkPortPrintBinary = &usbPrintBinary;
+	    }
 	}
+
+	previousCableDisconnected = cableDisconnected;
+
+	previousIntPackSOF = bIntPackSOF;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

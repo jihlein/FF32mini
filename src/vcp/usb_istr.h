@@ -33,6 +33,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usb_conf.h"
 
+extern uint8_t bIntPackSOF;  /* SOFs received between 2 consecutive packets */
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/

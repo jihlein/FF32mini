@@ -347,7 +347,7 @@ uint32_t CDC_Receive_DATA(uint8_t* recvBuf, uint32_t len)
 *******************************************************************************/
 uint8_t usbIsConfigured()
 {
-    return (bDeviceState == CONFIGURED);
+	return (bDeviceState == CONFIGURED);
 }
 
 /*******************************************************************************

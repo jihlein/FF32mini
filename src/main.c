@@ -141,8 +141,6 @@ int main(void)
 
         	batMonTick();
 
-        	checkUsbActive();
-
         	cliCom();
 
             if (systemConfig.mavlinkEnabled == true)
@@ -210,6 +208,8 @@ int main(void)
             mixTable();
             writeServos();
             writeMotors();
+
+            checkUsbActive(false);
 
        	    executionTime500Hz = micros() - currentTime;
 		}

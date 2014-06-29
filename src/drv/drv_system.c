@@ -339,29 +339,28 @@ void systemInit(void)
     gpsPortPrintBinary       = &uart2PrintBinary;
     gpsPortRead              = &uart2Read;
 
-    telemPortAvailable       = &uart1Available;
-    telemPortPrint           = &uart1Print;
-    telemPortPrintF          = &uart1PrintF;
-    telemPortRead            = &uart1Read;
-
-	///////////////////////////////////
+    ///////////////////////////////////
 
 	initMixer();
 
-	usbInit();
+	//usbInit();
 
 	gpioInit();
 
 	uart1Init();
     uart2Init();
 
+    usbInit();
+
+    ///////////////////////////////////
+
     LED0_OFF;
 
     delay(10000);  // 10 seconds of 20 second delay for sensor stabilization
 
-    checkUsbActive();
-
     ///////////////////////////////////
+
+    checkUsbActive(true);
 
     #ifdef __VERSION__
         cliPortPrintF("\ngcc version " __VERSION__ "\n");

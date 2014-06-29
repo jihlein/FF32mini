@@ -41,6 +41,8 @@
 
 uint32_t (*cliPortAvailable)(void);
 
+void     (*cliPortClearBuffer)(void);
+
 uint8_t  (*cliPortRead)(void);
 
 void     (*cliPortPrint)(char *str);
@@ -873,6 +875,15 @@ void cliCom(void)
             ///////////////////////////////
 
             case 'Z': // Not Used
+                if (usbIsConfigured() == true)
+                    cliPortPrint("\nUSB Configured TRUE\n");
+                else
+                    cliPortPrint("\nUSB Configured FALSE\n");
+
+                if (usbIsConnected() == true)
+                    cliPortPrint("\nUSB Connected TRUE\n");
+                else
+                    cliPortPrint("\nUSB Connected FALSE\n");
 
                 cliQuery = 'x';
                 break;
