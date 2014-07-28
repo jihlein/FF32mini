@@ -130,10 +130,13 @@ typedef struct systemConfig_t
 	uint8_t version;
 
 	float rollAndPitchRateScaling;
-
     float yawRateScaling;
+    float rollRateCmdLowPassTau;
+    float pitchRateCmdLowPassTau;
 
     float attitudeScaling;
+    float rollAttCmdLowPassTau;
+    float pitchAttCmdLowPassTau;
 
     float nDotEdotScaling;
 

@@ -238,6 +238,7 @@ void initFirstOrderFilter()
 	firstOrderFilters[TRICOPTER_YAW_LOWPASS].previousInput  = systemConfig.triYawServoMid;
     firstOrderFilters[TRICOPTER_YAW_LOWPASS].previousOutput = systemConfig.triYawServoMid;
 
+    ///////////////////////////////////
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -7,7 +7,7 @@
 
   Open Source STM32 Based Multicopter Controller Software
 
-  Designed to run on the Naze32Pro Flight Control Board
+  Designed to run on the AQ32 Flight Control Board
 
   Includes code and/or ideas from:
 
@@ -39,25 +39,15 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define OTHER   false
-#define ANGULAR true
-
-#define D_ERROR true
-#define D_STATE false
-
 // PID Variables
 typedef struct PIDdata {
-  float   B, P, I, D;
-  float   iTerm;
-  float   windupGuard;
-  float   lastDcalcValue;
-  float   lastDterm;
-  float   lastLastDterm;
-  uint8_t dErrorCalc;
-  uint8_t type;
+  float   P, I, D, N;
+  float   integratorState;
+  float   filterState;
+  uint8_t prevResetState;
 } PIDdata_t;
 
-extern uint8_t holdIntegrators;
+extern uint8_t pidReset;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -65,15 +55,7 @@ void initPID(void);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-float updatePID(float command, float state, float deltaT, uint8_t iHold, struct PIDdata *PIDparameters);
-
-///////////////////////////////////////////////////////////////////////////////
-
-void setPIDintegralError(uint8_t IDPid, float value);
-
-///////////////////////////////////////////////////////////////////////////////
-
-void zeroPIDintegralError(void);
+float updatePID(float error, float deltaT, float maximum, uint8_t reset, struct PIDdata *PIDparameters);
 
 ///////////////////////////////////////////////////////////////////////////////
 

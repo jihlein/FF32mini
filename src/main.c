@@ -251,51 +251,62 @@ int main(void)
             {
 				if ( systemConfig.activeTelemetry == 1 )
                 {
-            	    // 500 Hz Accels
-            	    telemPortPrintF("%9.4f, %9.4f, %9.4f\n", sensors.accel500Hz[XAXIS],
-            	            			                     sensors.accel500Hz[YAXIS],
-            	            			                     sensors.accel500Hz[ZAXIS]);
+            	    // Roll Loop
+					telemPortPrintF("1,%1d,%9.4f,%9.4f,%9.4f,%9.4f,%9.4f,%9.4f\n", flightMode,
+					        			                                           rateCmd[ROLL],
+					        			                                           sensors.gyro500Hz[ROLL],
+					        			                                           ratePID[ROLL],
+                                                                                   attCmd[ROLL],
+		                                                                           sensors.attitude500Hz[ROLL],
+		                                                                           attPID[ROLL]);
                 }
 
                 if ( systemConfig.activeTelemetry == 2 )
                 {
-            	    // 500 Hz Gyros
-            	    telemPortPrintF("%9.4f, %9.4f, %9.4f\n", sensors.gyro500Hz[ROLL ],
-            	            			                     sensors.gyro500Hz[PITCH],
-            	            					             sensors.gyro500Hz[YAW  ]);
+            	    // Pitch Loop
+					telemPortPrintF("2,%1d,%9.4f,%9.4f,%9.4f,%9.4f,%9.4f,%9.4f\n", flightMode,
+					        			                                           rateCmd[PITCH],
+					        			                                           sensors.gyro500Hz[PITCH],
+					        			                                           ratePID[PITCH],
+                                                                                   attCmd[PITCH],
+	                                                                               sensors.attitude500Hz[PITCH],
+	                                                                               attPID[PITCH]);
                 }
 
                 if ( systemConfig.activeTelemetry == 4 )
                 {
-            	    // 500 Hz Attitudes
-            	    telemPortPrintF("%9.4f, %9.4f, %9.4f\n", sensors.attitude500Hz[ROLL ],
-            	            			                     sensors.attitude500Hz[PITCH],
-            	            			                     sensors.attitude500Hz[YAW  ]);
+            	    // Sensors
+					telemPortPrintF("3,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,\n", sensors.accel500Hz[XAXIS],
+					        			                                                                            sensors.accel500Hz[YAXIS],
+					        			                                                                            sensors.accel500Hz[ZAXIS],
+					        			                                                                            sensors.gyro500Hz[ROLL],
+                                                                                                                    sensors.gyro500Hz[PITCH],
+	                                                                                                                sensors.gyro500Hz[YAW],
+	                                                                                                                sensors.mag10Hz[XAXIS],
+	                                                                                                                sensors.mag10Hz[YAXIS],
+	                                                                                                                sensors.mag10Hz[ZAXIS],
+	                                                                                                                sensors.attitude500Hz[ROLL],
+	                                                                                                                sensors.attitude500Hz[PITCH],
+	                                                                                                                sensors.attitude500Hz[YAW]);
+
                 }
 
                 if ( systemConfig.activeTelemetry == 8 )
                 {
-               	    // Vertical Variables
-            	    telemPortPrintF("%9.4f, %9.4f, %9.4f, %9.4f, %4ld\n", earthAxisAccels[ZAXIS],
-            	    		                                              sensors.pressureAlt50Hz,
-            	    		                                              hDotEstimate,
-            	    		                                              hEstimate,
-            	    		                                              ms5611Temperature);
+
                 }
 
-                if ( systemConfig.activeTelemetry == 16 )
+                if ( systemConfig.activeTelemetry == 16)
                 {
                	    // Vertical Variables
-            	    telemPortPrintF("%9.4f, %9.4f, %9.4f, %4ld, %1d, %9.4f, %9.4f\n", verticalVelocityCmd,
-            	    		                                                          hDotEstimate,
-            	    		                                                          hEstimate,
-            	    		                                                          ms5611Temperature,
-            	    		                                                          verticalModeState,
-            	    		                                                          throttleCmd,
-            	    		                                                          systemConfig.PID[HDOT_PID].iTerm);
+            	    telemPortPrintF("%9.4f, %9.4f, %9.4f, %4ld, %1d, %9.4f\n", verticalVelocityCmd,
+            	    		                                                   hDotEstimate,
+            	    		                                                   hEstimate,
+            	    		                                                   ms5611Temperature,
+            	    		                                                   verticalModeState,
+            	    		                                                   throttleCmd);
                 }
-
-            }
+		    }
 
             executionTime100Hz = micros() - currentTime;
         }

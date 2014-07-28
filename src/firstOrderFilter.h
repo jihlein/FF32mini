@@ -55,7 +55,7 @@
 #define EARTH_AXIS_ACCEL_Y_HIGHPASS 8
 #define EARTH_AXIS_ACCEL_Z_HIGHPASS 9
 
-#define TRICOPTER_YAW_LOWPASS 10
+#define TRICOPTER_YAW_LOWPASS  10
 
 ///////////////////////////////////////////////////////////////////////////////
 

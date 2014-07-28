@@ -136,7 +136,7 @@ void pulseMotors(uint8_t quantity)
 // Mixer
 ///////////////////////////////////////////////////////////////////////////////
 
-#define PIDMIX(X,Y,Z) (throttleCmd + axisPID[ROLL] * (X) + axisPID[PITCH] * (Y) + systemConfig.yawDirection * axisPID[YAW] * (Z))
+#define PIDMIX(X,Y,Z) (throttleCmd + ratePID[ROLL] * (X) + ratePID[PITCH] * (Y) + systemConfig.yawDirection * ratePID[YAW] * (Z))
 
 void mixTable(void)
 {
@@ -154,7 +154,7 @@ void mixTable(void)
             motor[1] = PIDMIX( -1.0f, -0.666667f, 0.0f );  // Right CCW
             motor[2] = PIDMIX(  0.0f,  1.333333f, 0.0f );  // Rear  CW or CCW
 
-            motor[5] = systemConfig.triYawServoMid + systemConfig.yawDirection * axisPID[YAW];
+            motor[5] = systemConfig.triYawServoMid + systemConfig.yawDirection * ratePID[YAW];
 
             motor[5] = firstOrderFilter(motor[5], &firstOrderFilters[TRICOPTER_YAW_LOWPASS]);
 

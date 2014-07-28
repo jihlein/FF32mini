@@ -362,7 +362,6 @@ void eepromCLI()
             case 'A': // config struct data
                 c1 = systemConfig.CRCAtEnd[0];
 
-                zeroPIDintegralError();
                 zeroPIDstates();
 
                 c2 = crc32B((uint32_t*)(&systemConfig),                  // CRC32B[systemConfig]
@@ -390,7 +389,7 @@ void eepromCLI()
 
                 // these change randomly when not in flight and can mistakenly
                 // make one think that the in-memory eeprom struct has changed
-                zeroPIDintegralError();
+
                 zeroPIDstates();
 
                 cliPortPrintF("\n");
@@ -491,7 +490,7 @@ void eepromCLI()
                 {
                     // check to see if the newly received sytem config
                     // actually differs from what's in-memory
-                    zeroPIDintegralError();
+
                     zeroPIDstates();
 
                     for (i = 0; i < size; i++)

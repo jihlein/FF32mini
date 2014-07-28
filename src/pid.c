@@ -7,7 +7,7 @@
 
   Open Source STM32 Based Multicopter Controller Software
 
-  Designed to run on the Naze32Pro Flight Control Board
+  Designed to run on the AQ32 Flight Control Board
 
   Includes code and/or ideas from:
 
@@ -39,10 +39,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-uint8_t holdIntegrators = true;
-
-#define F_CUT 20.0f
-float rc;
+uint8_t pidReset = true;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -50,106 +47,67 @@ void initPID(void)
 {
     uint8_t index;
 
-    rc = 1.0f / ( TWO_PI * F_CUT );
-
     for (index = 0; index < NUMBER_OF_PIDS; index++)
     {
-    	systemConfig.PID[index].iTerm          = 0.0f;
-    	systemConfig.PID[index].lastDcalcValue = 0.0f;
-    	systemConfig.PID[index].lastDterm      = 0.0f;
-    	systemConfig.PID[index].lastLastDterm  = 0.0f;
-	}
+    	systemConfig.PID[index].integratorState = 0.0f;
+    	systemConfig.PID[index].filterState     = 0.0f;
+    	systemConfig.PID[index].prevResetState  = false;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-float updatePID(float command, float state, float deltaT, uint8_t iHold, struct PIDdata *PIDparameters)
+float updatePID(float error, float deltaT, float maximum, uint8_t reset, struct PIDdata *PIDparameters)
 {
-    float error;
     float dTerm;
-    float dTermFiltered;
-    float dAverage;
+    float pidSum;
+    float pidLimited;
+    float windup;
 
-    ///////////////////////////////////
+    windup = 1000.0f * PIDparameters->P * maximum;
 
-    error = command - state;
-
-    if (PIDparameters->type == ANGULAR)
-        error = standardRadianFormat(error);
-
-    ///////////////////////////////////
-
-    if (iHold == false)
+    if ((reset == true) || (PIDparameters->prevResetState == true))
     {
-    	PIDparameters->iTerm += error * deltaT;
-    	PIDparameters->iTerm = constrain(PIDparameters->iTerm, -PIDparameters->windupGuard, PIDparameters->windupGuard);
+        PIDparameters->integratorState = 0.0f;
+        PIDparameters->filterState     = 0.0f;
     }
 
-    ///////////////////////////////////
+    dTerm = ((error * PIDparameters->D) - PIDparameters->filterState) * PIDparameters->N;
 
-    if (PIDparameters->dErrorCalc == D_ERROR)  // Calculate D term from error
+    pidSum = (error * PIDparameters->P) + PIDparameters->integratorState + dTerm;
+
+    if (pidSum > windup)
     {
-		dTerm = (error - PIDparameters->lastDcalcValue) / deltaT;
-        PIDparameters->lastDcalcValue = error;
-	}
-	else                                       // Calculate D term from state
-	{
-		dTerm = (PIDparameters->lastDcalcValue - state) / deltaT;
-
-		if (PIDparameters->type == ANGULAR)
-		    dTerm = standardRadianFormat(dTerm);
-
-		PIDparameters->lastDcalcValue = state;
-	}
-
-    ///////////////////////////////////
-
-    dTermFiltered = PIDparameters->lastDterm + deltaT / (rc + deltaT) * (dTerm - PIDparameters->lastDterm);
-
-    dAverage = (dTermFiltered + PIDparameters->lastDterm + PIDparameters->lastLastDterm) * 0.333333f;
-
-    PIDparameters->lastLastDterm = PIDparameters->lastDterm;
-    PIDparameters->lastDterm = dTermFiltered;
-
-    ///////////////////////////////////
-
-    if (PIDparameters->type == ANGULAR)
-        return(PIDparameters->P * error                +
-	           PIDparameters->I * PIDparameters->iTerm +
-	           PIDparameters->D * dAverage);
+        pidLimited = windup;
+    }
     else
-        return(PIDparameters->P * PIDparameters->B * command +
-               PIDparameters->I * PIDparameters->iTerm       +
-               PIDparameters->D * dAverage                   -
-               PIDparameters->P * state);
+    {
+        pidLimited = -windup;
 
-    ///////////////////////////////////
-}
+        if (!(pidSum < (-windup)))
+        {
+            pidLimited = pidSum;
+        }
+    }
 
-///////////////////////////////////////////////////////////////////////////////
+    PIDparameters->integratorState += ((error * PIDparameters->I) + 100.0f * (pidLimited - pidSum)) * deltaT;
 
-void setPIDintegralError(uint8_t IDPid, float value)
-{
-	systemConfig.PID[IDPid].iTerm = value;
-}
+    PIDparameters->filterState += deltaT * dTerm;
 
-///////////////////////////////////////////////////////////////////////////////
+    if (reset == true)
+        PIDparameters->prevResetState = true;
+    else
+        PIDparameters->prevResetState = false;
 
-void zeroPIDintegralError(void)
-{
-    uint8_t index;
-
-    for (index = 0; index < NUMBER_OF_PIDS; index++)
-         setPIDintegralError(index, 0.0f);
+    return pidLimited;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 void setPIDstates(uint8_t IDPid, float value)
 {
-    systemConfig.PID[IDPid].lastDcalcValue = value;
-    systemConfig.PID[IDPid].lastDterm      = value;
-    systemConfig.PID[IDPid].lastLastDterm  = value;
+    systemConfig.PID[IDPid].integratorState = value;
+    systemConfig.PID[IDPid].filterState     = value;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -163,5 +121,3 @@ void zeroPIDstates(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-

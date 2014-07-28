@@ -66,7 +66,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 static uint8_t sensorVersion = 3;
-static uint8_t systemVersion = 2;
+static uint8_t systemVersion = 3;
 
 sensorConfig_t sensorConfig;
 systemConfig_t systemConfig;
@@ -322,11 +322,11 @@ void checkSensorEEPROM(bool eepromReset)
 
 		///////////////////////////////
 
-		sensorConfig.accelCutoff = 1.0f;
+		sensorConfig.accelCutoff = 0.1f;
 
 		///////////////////////////////
 
-	    sensorConfig.KpAcc = 5.0f;    // proportional gain governs rate of convergence to accelerometer
+	    sensorConfig.KpAcc = 1.0f;    // proportional gain governs rate of convergence to accelerometer
 	    sensorConfig.KiAcc = 0.0f;    // integral gain governs rate of convergence of gyroscope biases
 	    sensorConfig.KpMag = 5.0f;    // proportional gain governs rate of convergence to magnetometer
 	    sensorConfig.KiMag = 0.0f;    // integral gain governs rate of convergence of gyroscope biases
@@ -436,7 +436,7 @@ void writeSystemEEPROM(void)
 	///////////////////////////////////
 
 	// there's no reason to write these values to EEPROM, they'll just be noise
-    zeroPIDintegralError();
+
     zeroPIDstates();
 
     if (systemConfig.CRCFlags & CRC_HistoryBad)
@@ -541,10 +541,13 @@ void checkSystemEEPROM(bool eepromReset)
 	    ///////////////////////////////////
 
 	    systemConfig.rollAndPitchRateScaling = 100.0 / 180000.0 * PI;  // Stick to rate scaling for 100 DPS
-
-        systemConfig.yawRateScaling          = 100.0 / 180000.0 * PI;  // Stick to rate scaling for 100 DPS
+        systemConfig.yawRateScaling          = 300.0 / 180000.0 * PI;  // Stick to rate scaling for 100 DPS
+        systemConfig.rollRateCmdLowPassTau   = 0.1f;
+        systemConfig.pitchRateCmdLowPassTau  = 0.1f;
 
         systemConfig.attitudeScaling         = 60.0  / 180000.0 * PI;  // Stick to att scaling for 60 degrees
+        systemConfig.rollAttCmdLowPassTau    = 0.1f;
+        systemConfig.pitchAttCmdLowPassTau   = 0.1f;
 
         systemConfig.nDotEdotScaling         = 0.009f;                 // Stick to nDot/eDot scaling (9 mps)/(1000 RX PWM Steps) = 0.009
 
@@ -615,153 +618,105 @@ void checkSystemEEPROM(bool eepromReset)
         systemConfig.minThrottle  = (float)(MINCOMMAND + 200);
         systemConfig.maxThrottle  = (float)(MAXCOMMAND);
 
-        ///////////////////////////////////
+        ///////////////////////////////
 
-        systemConfig.PID[ROLL_RATE_PID].B               =   1.0f;
-        systemConfig.PID[ROLL_RATE_PID].P               = 250.0f;
-        systemConfig.PID[ROLL_RATE_PID].I               = 100.0f;
-        systemConfig.PID[ROLL_RATE_PID].D               =   0.0f;
-        systemConfig.PID[ROLL_RATE_PID].iTerm           =   0.0f;
-        systemConfig.PID[ROLL_RATE_PID].windupGuard     = 100.0f;  // PWMs
-        systemConfig.PID[ROLL_RATE_PID].lastDcalcValue  =   0.0f;
-        systemConfig.PID[ROLL_RATE_PID].lastDterm       =   0.0f;
-        systemConfig.PID[ROLL_RATE_PID].lastLastDterm   =   0.0f;
-        systemConfig.PID[ROLL_RATE_PID].dErrorCalc      =   D_ERROR;
-        systemConfig.PID[ROLL_RATE_PID].type            =   OTHER;
+        systemConfig.PID[ROLL_RATE_PID].P                =  250.0f;
+        systemConfig.PID[ROLL_RATE_PID].I                =  100.0f;
+        systemConfig.PID[ROLL_RATE_PID].D                =    0.0f;
+        systemConfig.PID[ROLL_RATE_PID].N                =  100.0f;
+        systemConfig.PID[ROLL_RATE_PID].integratorState  =    0.0f;
+        systemConfig.PID[ROLL_RATE_PID].filterState      =    0.0f;
+        systemConfig.PID[ROLL_RATE_PID].prevResetState   =   false;
 
-        systemConfig.PID[PITCH_RATE_PID].B              =   1.0f;
-        systemConfig.PID[PITCH_RATE_PID].P              = 250.0f;
-        systemConfig.PID[PITCH_RATE_PID].I              = 100.0f;
-        systemConfig.PID[PITCH_RATE_PID].D              =   0.0f;
-        systemConfig.PID[PITCH_RATE_PID].iTerm          =   0.0f;
-        systemConfig.PID[PITCH_RATE_PID].windupGuard    = 100.0f;  // PWMs
-        systemConfig.PID[PITCH_RATE_PID].lastDcalcValue =   0.0f;
-        systemConfig.PID[PITCH_RATE_PID].lastDterm      =   0.0f;
-        systemConfig.PID[PITCH_RATE_PID].lastLastDterm  =   0.0f;
-        systemConfig.PID[PITCH_RATE_PID].dErrorCalc     =   D_ERROR;
-        systemConfig.PID[PITCH_RATE_PID].type           =   OTHER;
+        systemConfig.PID[PITCH_RATE_PID].P               =  250.0f;
+        systemConfig.PID[PITCH_RATE_PID].I               =  100.0f;
+        systemConfig.PID[PITCH_RATE_PID].D               =    0.0f;
+        systemConfig.PID[PITCH_RATE_PID].N               =  100.0f;
+        systemConfig.PID[PITCH_RATE_PID].integratorState =    0.0f;
+        systemConfig.PID[PITCH_RATE_PID].filterState     =    0.0f;
+        systemConfig.PID[PITCH_RATE_PID].prevResetState  =   false;
 
-        systemConfig.PID[YAW_RATE_PID].B                =   1.0f;
-        systemConfig.PID[YAW_RATE_PID].P                = 350.0f;
-        systemConfig.PID[YAW_RATE_PID].I                = 100.0f;
-        systemConfig.PID[YAW_RATE_PID].D                =   0.0f;
-        systemConfig.PID[YAW_RATE_PID].iTerm            =   0.0f;
-        systemConfig.PID[YAW_RATE_PID].windupGuard      = 100.0f;  // PWMs
-        systemConfig.PID[YAW_RATE_PID].lastDcalcValue   =   0.0f;
-        systemConfig.PID[YAW_RATE_PID].lastDterm        =   0.0f;
-        systemConfig.PID[YAW_RATE_PID].lastLastDterm    =   0.0f;
-        systemConfig.PID[YAW_RATE_PID].dErrorCalc       =   D_ERROR;
-        systemConfig.PID[YAW_RATE_PID].type             =   OTHER;
+        systemConfig.PID[YAW_RATE_PID].P                 =  350.0f;
+        systemConfig.PID[YAW_RATE_PID].I                 =  100.0f;
+        systemConfig.PID[YAW_RATE_PID].D                 =    0.0f;
+        systemConfig.PID[YAW_RATE_PID].N                 =  100.0f;
+        systemConfig.PID[YAW_RATE_PID].integratorState   =    0.0f;
+        systemConfig.PID[YAW_RATE_PID].filterState       =    0.0f;
+        systemConfig.PID[YAW_RATE_PID].prevResetState    =   false;
 
-        systemConfig.PID[ROLL_ATT_PID].B                =   1.0f;
-        systemConfig.PID[ROLL_ATT_PID].P                =   2.0f;
-        systemConfig.PID[ROLL_ATT_PID].I                =   0.0f;
-        systemConfig.PID[ROLL_ATT_PID].D                =   0.0f;
-        systemConfig.PID[ROLL_ATT_PID].iTerm            =   0.0f;
-        systemConfig.PID[ROLL_ATT_PID].windupGuard      =   0.5f;  // radians/sec
-        systemConfig.PID[ROLL_ATT_PID].lastDcalcValue   =   0.0f;
-        systemConfig.PID[ROLL_ATT_PID].lastDterm        =   0.0f;
-        systemConfig.PID[ROLL_ATT_PID].lastLastDterm    =   0.0f;
-        systemConfig.PID[ROLL_ATT_PID].dErrorCalc       =   D_ERROR;
-        systemConfig.PID[ROLL_ATT_PID].type             =   ANGULAR;
+        systemConfig.PID[ROLL_ATT_PID].P                 =    2.0f;
+        systemConfig.PID[ROLL_ATT_PID].I                 =    0.0f;
+        systemConfig.PID[ROLL_ATT_PID].D                 =    0.0f;
+        systemConfig.PID[ROLL_ATT_PID].N                 =  100.0f;
+        systemConfig.PID[ROLL_ATT_PID].integratorState   =    0.0f;
+        systemConfig.PID[ROLL_ATT_PID].filterState       =    0.0f;
+        systemConfig.PID[ROLL_ATT_PID].prevResetState    =   false;
 
-        systemConfig.PID[PITCH_ATT_PID].B               =   1.0f;
-        systemConfig.PID[PITCH_ATT_PID].P               =   2.0f;
-        systemConfig.PID[PITCH_ATT_PID].I               =   0.0f;
-        systemConfig.PID[PITCH_ATT_PID].D               =   0.0f;
-        systemConfig.PID[PITCH_ATT_PID].iTerm           =   0.0f;
-        systemConfig.PID[PITCH_ATT_PID].windupGuard     =   0.5f;  // radians/sec
-        systemConfig.PID[PITCH_ATT_PID].lastDcalcValue  =   0.0f;
-        systemConfig.PID[PITCH_ATT_PID].lastDterm       =   0.0f;
-        systemConfig.PID[PITCH_ATT_PID].lastLastDterm   =   0.0f;
-        systemConfig.PID[PITCH_ATT_PID].dErrorCalc      =   D_ERROR;
-        systemConfig.PID[PITCH_ATT_PID].type            =   ANGULAR;
+        systemConfig.PID[PITCH_ATT_PID].P                =    2.0f;
+        systemConfig.PID[PITCH_ATT_PID].I                =    0.0f;
+        systemConfig.PID[PITCH_ATT_PID].D                =    0.0f;
+        systemConfig.PID[PITCH_ATT_PID].N                =  100.0f;
+        systemConfig.PID[PITCH_ATT_PID].integratorState  =    0.0f;
+        systemConfig.PID[PITCH_ATT_PID].filterState      =    0.0f;
+        systemConfig.PID[PITCH_ATT_PID].prevResetState   =   false;
 
-        systemConfig.PID[HEADING_PID].B                 =   1.0f;
-        systemConfig.PID[HEADING_PID].P                 =   3.0f;
-        systemConfig.PID[HEADING_PID].I                 =   0.0f;
-        systemConfig.PID[HEADING_PID].D                 =   0.0f;
-        systemConfig.PID[HEADING_PID].iTerm             =   0.0f;
-        systemConfig.PID[HEADING_PID].windupGuard       =   0.5f;  // radians/sec
-        systemConfig.PID[HEADING_PID].lastDcalcValue    =   0.0f;
-        systemConfig.PID[HEADING_PID].lastDterm         =   0.0f;
-        systemConfig.PID[HEADING_PID].lastLastDterm     =   0.0f;
-        systemConfig.PID[HEADING_PID].dErrorCalc        =   D_ERROR;
-        systemConfig.PID[HEADING_PID].type              =   ANGULAR;
+        systemConfig.PID[HEADING_PID].P                  =    3.0f;
+        systemConfig.PID[HEADING_PID].I                  =    0.0f;
+        systemConfig.PID[HEADING_PID].D                  =    0.0f;
+        systemConfig.PID[HEADING_PID].N                  =  100.0f;
+        systemConfig.PID[HEADING_PID].integratorState    =    0.0f;
+        systemConfig.PID[HEADING_PID].filterState        =    0.0f;
+        systemConfig.PID[HEADING_PID].prevResetState     =   false;
 
-        systemConfig.PID[NDOT_PID].B                    =   1.0f;
-        systemConfig.PID[NDOT_PID].P                    =   3.0f;
-        systemConfig.PID[NDOT_PID].I                    =   0.0f;
-        systemConfig.PID[NDOT_PID].D                    =   0.0f;
-        systemConfig.PID[NDOT_PID].iTerm                =   0.0f;
-        systemConfig.PID[NDOT_PID].windupGuard          =   0.5f;
-        systemConfig.PID[NDOT_PID].lastDcalcValue       =   0.0f;
-        systemConfig.PID[NDOT_PID].lastDterm            =   0.0f;
-        systemConfig.PID[NDOT_PID].lastLastDterm        =   0.0f;
-        systemConfig.PID[NDOT_PID].dErrorCalc           =   D_ERROR;
-        systemConfig.PID[NDOT_PID].type                 =   OTHER;
+        systemConfig.PID[NDOT_PID].P                     =    3.0f;
+        systemConfig.PID[NDOT_PID].I                     =    0.0f;
+        systemConfig.PID[NDOT_PID].D                     =    0.0f;
+        systemConfig.PID[NDOT_PID].N                     =  100.0f;
+        systemConfig.PID[NDOT_PID].integratorState       =    0.0f;
+        systemConfig.PID[NDOT_PID].filterState           =    0.0f;
+        systemConfig.PID[NDOT_PID].prevResetState        =   false;
 
-        systemConfig.PID[EDOT_PID].B                    =   1.0f;
-        systemConfig.PID[EDOT_PID].P                    =   3.0f;
-        systemConfig.PID[EDOT_PID].I                    =   0.0f;
-        systemConfig.PID[EDOT_PID].D                    =   0.0f;
-        systemConfig.PID[EDOT_PID].iTerm                =   0.0f;
-        systemConfig.PID[EDOT_PID].windupGuard          =   0.5f;
-        systemConfig.PID[EDOT_PID].lastDcalcValue       =   0.0f;
-        systemConfig.PID[EDOT_PID].lastDterm            =   0.0f;
-        systemConfig.PID[EDOT_PID].lastLastDterm        =   0.0f;
-        systemConfig.PID[EDOT_PID].dErrorCalc           =   D_ERROR;
-        systemConfig.PID[EDOT_PID].type                 =   OTHER;
+        systemConfig.PID[EDOT_PID].P                     =    3.0f;
+        systemConfig.PID[EDOT_PID].I                     =    0.0f;
+        systemConfig.PID[EDOT_PID].D                     =    0.0f;
+        systemConfig.PID[EDOT_PID].N                     =  100.0f;
+        systemConfig.PID[EDOT_PID].integratorState       =    0.0f;
+        systemConfig.PID[EDOT_PID].filterState           =    0.0f;
+        systemConfig.PID[EDOT_PID].prevResetState        =   false;
 
-        systemConfig.PID[HDOT_PID].B                    =   1.0f;
-        systemConfig.PID[HDOT_PID].P                    =   2.0f;
-        systemConfig.PID[HDOT_PID].I                    =   0.0f;
-        systemConfig.PID[HDOT_PID].D                    =   0.0f;
-        systemConfig.PID[HDOT_PID].iTerm                =   0.0f;
-        systemConfig.PID[HDOT_PID].windupGuard          =   5.0f;
-        systemConfig.PID[HDOT_PID].lastDcalcValue       =   0.0f;
-        systemConfig.PID[HDOT_PID].lastDterm            =   0.0f;
-        systemConfig.PID[HDOT_PID].lastLastDterm        =   0.0f;
-        systemConfig.PID[HDOT_PID].dErrorCalc           =   D_ERROR;
-        systemConfig.PID[HDOT_PID].type                 =   OTHER;
+        systemConfig.PID[HDOT_PID].P                     =    2.0f;
+        systemConfig.PID[HDOT_PID].I                     =    0.0f;
+        systemConfig.PID[HDOT_PID].D                     =    0.0f;
+        systemConfig.PID[HDOT_PID].N                     =  100.0f;
+        systemConfig.PID[HDOT_PID].integratorState       =    0.0f;
+        systemConfig.PID[HDOT_PID].filterState           =    0.0f;
+        systemConfig.PID[HDOT_PID].prevResetState        =   false;
 
-        systemConfig.PID[N_PID].B                       =   1.0f;
-        systemConfig.PID[N_PID].P                       =   3.0f;
-        systemConfig.PID[N_PID].I                       =   0.0f;
-        systemConfig.PID[N_PID].D                       =   0.0f;
-        systemConfig.PID[N_PID].iTerm                   =   0.0f;
-        systemConfig.PID[N_PID].windupGuard             =   0.5f;
-        systemConfig.PID[N_PID].lastDcalcValue          =   0.0f;
-        systemConfig.PID[N_PID].lastDterm               =   0.0f;
-        systemConfig.PID[N_PID].lastLastDterm           =   0.0f;
-        systemConfig.PID[N_PID].dErrorCalc              =   D_ERROR;
-        systemConfig.PID[N_PID].type                    =   OTHER;
+        systemConfig.PID[N_PID].P                        =    3.0f;
+        systemConfig.PID[N_PID].I                        =    0.0f;
+        systemConfig.PID[N_PID].D                        =    0.0f;
+        systemConfig.PID[N_PID].N                        =  100.0f;
+        systemConfig.PID[N_PID].integratorState          =    0.0f;
+        systemConfig.PID[N_PID].filterState              =    0.0f;
+        systemConfig.PID[N_PID].prevResetState           =   false;
 
-        systemConfig.PID[E_PID].B                       =   1.0f;
-        systemConfig.PID[E_PID].P                       =   3.0f;
-        systemConfig.PID[E_PID].I                       =   0.0f;
-        systemConfig.PID[E_PID].D                       =   0.0f;
-        systemConfig.PID[E_PID].iTerm                   =   0.0f;
-        systemConfig.PID[E_PID].windupGuard             =   0.5f;
-        systemConfig.PID[E_PID].lastDcalcValue          =   0.0f;
-        systemConfig.PID[E_PID].lastDterm               =   0.0f;
-        systemConfig.PID[E_PID].lastLastDterm           =   0.0f;
-        systemConfig.PID[E_PID].dErrorCalc              =   D_ERROR;
-        systemConfig.PID[E_PID].type                    =   OTHER;
+        systemConfig.PID[E_PID].P                        =    3.0f;
+        systemConfig.PID[E_PID].I                        =    0.0f;
+        systemConfig.PID[E_PID].D                        =    0.0f;
+        systemConfig.PID[E_PID].N                        =  100.0f;
+        systemConfig.PID[E_PID].integratorState          =    0.0f;
+        systemConfig.PID[E_PID].filterState              =    0.0f;
+        systemConfig.PID[E_PID].prevResetState           =   false;
 
-        systemConfig.PID[H_PID].B                       =   1.0f;
-        systemConfig.PID[H_PID].P                       =   2.0f;
-        systemConfig.PID[H_PID].I                       =   0.0f;
-        systemConfig.PID[H_PID].D                       =   0.0f;
-        systemConfig.PID[H_PID].iTerm                   =   0.0f;
-        systemConfig.PID[H_PID].windupGuard             =   5.0f;
-        systemConfig.PID[H_PID].lastDcalcValue          =   0.0f;
-        systemConfig.PID[H_PID].lastDterm               =   0.0f;
-        systemConfig.PID[H_PID].lastLastDterm           =   0.0f;
-        systemConfig.PID[H_PID].dErrorCalc              =   D_ERROR;
-        systemConfig.PID[H_PID].type                    =   OTHER;
+        systemConfig.PID[H_PID].P                        =    2.0f;
+        systemConfig.PID[H_PID].I                        =    0.0f;
+        systemConfig.PID[H_PID].D                        =    0.0f;
+        systemConfig.PID[H_PID].N                        =  100.0f;
+        systemConfig.PID[H_PID].integratorState          =    0.0f;
+        systemConfig.PID[H_PID].filterState              =    0.0f;
+        systemConfig.PID[H_PID].prevResetState           =   false;
 
-        ///////////////////////////////////
+        ///////////////////////////////
 
         systemConfig.armCount                 =  50;
 		systemConfig.disarmCount              =  0;
